@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - name: Generated types match the spec
+        if: matrix.node == 22
+        run: npm run check:drift
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - name: SDK requests match the spec (Prism contract tests)
+        if: matrix.node == 22
+        run: npm run test:contract
+      - run: npm run build
