@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call: # the release runs this whole suite before publishing
 
 jobs:
   check:
@@ -32,3 +33,5 @@ jobs:
         if: matrix.node == 22
         run: npm run test:contract
       - run: npm run build
+      - name: The packed package installs and works (ESM, CommonJS, TypeScript)
+        run: npm run smoke:pack
