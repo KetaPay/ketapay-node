@@ -92,7 +92,7 @@ Releasing is three steps, and only the last one ships anything:
 2. **Tag (when you merge that PR).** Merging it tags the version (`v0.1.0-beta.1`) and creates a GitHub release. Nothing is published yet.
 3. **Publish (manual, dudox only).** Actions tab > **Publish to npm** > Run workflow (leave the tag empty for the latest release). It checks the tag is on `main`, matches `package.json` and isn't on npm yet; runs the whole CI suite on that exact tag; builds; runs `npm run smoke:pack` (the exact package file installed in an empty project and used through ESM, CommonJS and TypeScript); then publishes. Any failure means nothing is published.
 
-Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag (`npm i @ketapay/node@next`); plain versions under `latest`. The first release is pinned to `0.1.0-beta.1` by `release-as` in `release-please-config.json`: remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
+Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag (`npm i @ketapay/node@next`); plain versions under `latest`. The next release is pinned to `0.1.0-beta.2` by `release-as` in `release-please-config.json` (`0.1.0-beta.1` was tagged but never published): remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
 
 Auth: `NPM_TOKEN` from Infisical (`ketapay-node-e6-wk`, prod) when set, otherwise npm Trusted Publishing. Check the token without publishing with the **Check release secrets** workflow. Provenance needs a public repo; turn it on with `"provenance": true` in `publishConfig` when this repo goes public.
 
