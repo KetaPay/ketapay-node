@@ -60,7 +60,9 @@ Adding endpoints, fields, enum values and optional parameters is fine. Removing 
 
 Semantic versioning, automated by Release Please. Write commit messages as conventional commits: `feat:` (new endpoint or field, minor version), `fix:` (patch), `feat!:` or `BREAKING CHANGE:` (major, v2 only), `refactor:`, `test:`, `docs:`, `chore:`. Release Please opens a release PR with the version bump and changelog; merging it tags the release and publishes to npm with provenance. Never edit the version or `CHANGELOG.md` by hand; the version in the code is filled in from `package.json` at build time.
 
-Releases are off until we're ready to publish (repo variables `RELEASES_ENABLED` and `NPM_PUBLISH_ENABLED`, secret `NPM_TOKEN`, and removing `"private": true`).
+Publishing uses npm Trusted Publishing (no npm token stored anywhere) and attaches provenance, so anyone can verify a version was built from this repo by `release.yml`. Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag; plain versions under `latest`. The first release is pinned to `0.1.0-beta.1` by `release-as` in `release-please-config.json`: remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
+
+Switches: repo variables `RELEASES_ENABLED` (Release Please opens release PRs) and `NPM_PUBLISH_ENABLED` (merging one publishes). Only owners of the `ketapay` npm org can change who may publish.
 
 ## Style
 
