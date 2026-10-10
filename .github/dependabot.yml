@@ -5,9 +5,22 @@ updates:
     schedule:
       interval: weekly
     groups:
+      # Minor and patch updates of dev tools together; each major version gets its own PR so one
+      # breaking change can't block the rest.
       dev-dependencies:
         dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # TypeScript 6+/7: wait until openapi-typescript and typescript-eslint support it.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # Types must match the oldest Node we support (engines), not the newest.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
