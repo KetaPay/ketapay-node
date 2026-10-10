@@ -62,6 +62,8 @@ Semantic versioning, automated by Release Please. Write commit messages as conve
 
 Publishing uses npm Trusted Publishing (no npm token stored anywhere). Provenance (proof a version was built from this repo by `release.yml`) needs a public repo; turn it on with `"provenance": true` in `publishConfig` when this repo goes public. Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag; plain versions under `latest`. The first release is pinned to `0.1.0-beta.1` by `release-as` in `release-please-config.json`: remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
 
+Before anything is published, the release runs the whole CI suite again on the release commit (every Node version, contract tests, spec checks) and then `npm run smoke:pack`: the exact package file is installed into an empty project and used through ESM, CommonJS and TypeScript. If any of it fails, nothing is published. Run `npm run smoke:pack` locally after `npm run build`.
+
 Switches: repo variables `RELEASES_ENABLED` (Release Please opens release PRs) and `NPM_PUBLISH_ENABLED` (merging one publishes). Only owners of the `ketapay` npm org can change who may publish.
 
 ## Style
