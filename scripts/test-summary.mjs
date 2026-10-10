@@ -7,6 +7,7 @@ import { relative } from 'node:path'
 const suites = [
   ['Unit tests', 'reports/unit.json'],
   ['Contract tests (SDK requests against the spec)', 'reports/contract.json'],
+  ['End-to-end tests (staging)', 'reports/e2e.json'],
 ]
 const icon = { passed: '✅', failed: '❌', skipped: '⏭️', pending: '⏭️', todo: '📝' }
 const out = []

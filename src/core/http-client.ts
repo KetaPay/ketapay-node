@@ -39,12 +39,15 @@ export class HttpClient {
     this.apiKey = config.apiKey
     this.livemode = config.apiKey.startsWith('sk_live_')
     this.baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, '')
+    if (!isSafeBaseUrl(this.baseUrl)) {
+      throw new TypeError('KetaPay: baseUrl must use https (plain http is only allowed for localhost)')
+    }
     this.maxRetries = config.maxRetries ?? 2
     this.timeoutMs = config.timeoutMs ?? 30_000
     this.fetchImpl = config.fetch ?? globalThis.fetch?.bind(globalThis)
     this.defaultHeaders = config.defaultHeaders ?? {}
     this.log = createLogger(config.logLevel, config.logger)
-    if (!this.fetchImpl) throw new TypeError('KetaPay: no global fetch found. Use Node 22 or later, or pass `fetch`.')
+    if (!this.fetchImpl) throw new TypeError('KetaPay: no global fetch found. Use Node 18 or later, or pass `fetch`.')
   }
 
   request<T>(method: Method, path: string, args: RequestArgs = {}): APIPromise<T> {
@@ -61,7 +64,7 @@ export class HttpClient {
       Accept: 'application/json',
       'User-Agent': userAgent(),
     }
-    if (method === 'POST') headers['Idempotency-Key'] = options?.idempotencyKey ?? randomId()
+    if (method === 'POST') headers['Idempotency-Key'] = options?.idempotencyKey ?? (await randomId())
     if (options?.customerToken) headers['KetaPay-Customer-Token'] = options.customerToken
     let payload: BodyInit | undefined
     if (form) {
@@ -115,6 +118,15 @@ export class HttpClient {
       }
       throw errorFromResponse(response.status, data, requestId)
     }
+  }
+}
+
+function isSafeBaseUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url)
+    return protocol === 'https:' || (protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(hostname))
+  } catch {
+    return false
   }
 }
 

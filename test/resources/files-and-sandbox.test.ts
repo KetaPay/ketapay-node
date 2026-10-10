@@ -3,7 +3,7 @@ import { InvalidRequestError } from '../../src/index.js'
 import { client, mockFetch } from '../helpers.js'
 
 describe('files', () => {
-  it('uploads as multipart with the purpose, without a JSON content type', async () => {
+  it('[SEC-007] uploads as multipart with the purpose, without a JSON content type', async () => {
     const { fetch, calls } = mockFetch({ body: { id: 'f1' } })
     await client(fetch).files.create(
       { file: new TextEncoder().encode('%PDF'), filename: 'brief.pdf', purpose: 'agreement' },
@@ -25,7 +25,7 @@ describe('files', () => {
 })
 
 describe('test helpers', () => {
-  it('fail at once with a live key, without contacting KetaPay', async () => {
+  it('[SEC-005] fail at once with a live key, without contacting KetaPay', async () => {
     const { fetch, calls } = mockFetch({ body: {} })
     const live = client(fetch, { apiKey: 'sk_live_x' })
     const err = await live.testHelpers.escrows.simulate('e1', { action: 'deliver' }).catch((e: unknown) => e)

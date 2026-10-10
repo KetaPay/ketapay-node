@@ -1,6 +1,8 @@
 // Packs the package exactly as npm would publish it, installs it in an empty project, then
-// type-checks and runs it the way a customer would: ESM import, CommonJS require, and TypeScript with
-// Node's own module resolution. Run after `npm run build`.
+// type-checks and runs it the way a customer would. Run after `npm run build`.
+// [PKG-001] ESM import and CommonJS require  [PKG-002] types with TypeScript 5.0 and current
+// [PKG-003] only dist, LICENSE, README  [PKG-004] CI runs this on every supported Node (18 to 24)
+// [PKG-006] reported version equals package.json  [PKG-007] no runtime dependencies
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -18,7 +20,11 @@ try {
   if (unexpected.length) throw new Error(`Package would ship unexpected files: ${unexpected.join(', ')}`)
 
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'smoke', private: true }))
-  run('npm', ['install', '--no-audit', '--no-fund', join(dir, filename)])
+  run('npm', ['install', '--no-audit', '--no-fund', join(dir, filename), 'typescript@5.0.4'])
+  const installed = JSON.parse(readFileSync(join(dir, 'node_modules/@ketapay/node/package.json'), 'utf8'))
+  if (installed.dependencies && Object.keys(installed.dependencies).length) {
+    throw new Error(`Package must have no runtime dependencies: ${Object.keys(installed.dependencies).join(', ')}`)
+  }
 
   writeFileSync(
     join(dir, 'esm.mjs'),
@@ -61,29 +67,35 @@ export const livemode: boolean = new KetaPay('sk_test_x').livemode
 
   console.log(run('node', ['esm.mjs']).trim())
   console.log(run('node', ['cjs.cjs']).trim())
-  const tsc = join(root, 'node_modules', 'typescript', 'bin', 'tsc')
-  for (const [module, moduleResolution, files] of [
-    ['nodenext', 'nodenext', ['types.mts', 'types.cts']],
-    ['esnext', 'bundler', ['types.mts']],
-  ]) {
-    const compilerOptions = {
-      noEmit: true,
-      strict: true,
-      skipLibCheck: true,
-      lib: ['es2022', 'dom'],
-      types: [],
-      module,
-      moduleResolution,
+  const compilers = [
+    ['current', join(root, 'node_modules', 'typescript', 'bin', 'tsc')],
+    ['5.0', join(dir, 'node_modules', 'typescript', 'bin', 'tsc')],
+  ]
+  for (const [tsVersion, tsc] of compilers)
+    for (const [module, moduleResolution, files] of [
+      ['nodenext', 'nodenext', ['types.mts', 'types.cts']],
+      ['esnext', 'bundler', ['types.mts']],
+    ]) {
+      const compilerOptions = {
+        noEmit: true,
+        strict: true,
+        skipLibCheck: true,
+        lib: ['es2022', 'dom'],
+        types: [],
+        module,
+        moduleResolution,
+      }
+      writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions, files }))
+      try {
+        execFileSync('node', [tsc, '-p', 'tsconfig.json'], { cwd: dir, stdio: 'pipe' })
+      } catch (err) {
+        throw new Error(
+          `Types failed with TypeScript ${tsVersion}, moduleResolution ${moduleResolution}:\n${err.stdout}`,
+        )
+      }
+      console.log(`types ok (TypeScript ${tsVersion}, moduleResolution ${moduleResolution})`)
     }
-    writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify({ compilerOptions, files }))
-    try {
-      execFileSync('node', [tsc, '-p', 'tsconfig.json'], { cwd: dir, stdio: 'pipe' })
-    } catch (err) {
-      throw new Error(`Types failed with moduleResolution ${moduleResolution}:\n${err.stdout}`)
-    }
-    console.log(`types ok (moduleResolution ${moduleResolution})`)
-  }
-  console.log(`smoke test passed for ${filename}: ${shipped.length} files`)
+  console.log(`smoke test passed for ${filename} on Node ${process.versions.node}: ${shipped.length} files`)
 } finally {
   rmSync(dir, { recursive: true, force: true })
 }

@@ -8,7 +8,7 @@ import type { KetaPayEvent, VerifyOptions } from './types.js'
  * endpoint's signing secret. While rotating secrets, pass both secrets as an array.
  *
  * Rejects with `WebhookSignatureError` when the request must be refused. Works on any runtime
- * with Web Crypto (Node 22+, Deno, Bun, Cloudflare Workers, Vercel Edge).
+ * with Web Crypto (Node 18+, Deno, Bun, Cloudflare Workers, Vercel Edge).
  */
 export async function verifyWebhook(
   payload: string | Uint8Array,

@@ -21,13 +21,13 @@ async function codeOf(promise: Promise<unknown>): Promise<string | undefined> {
 }
 
 describe('verifyWebhook', () => {
-  it('returns the parsed event for a valid signature, from a string or bytes', async () => {
+  it('[WH-001] returns the parsed event for a valid signature, from a string or bytes', async () => {
     const header = `t=${now},v1=${sign(body, secret)}`
     expect((await verifyWebhook(body, header, secret, { now })).id).toBe('evt_1')
     expect((await verifyWebhook(new TextEncoder().encode(body), header, secret, { now })).id).toBe('evt_1')
   })
 
-  it('rejects a tampered body or the wrong secret', async () => {
+  it('[WH-002] [WH-003] rejects a tampered body or the wrong secret', async () => {
     const header = `t=${now},v1=${sign(body, secret)}`
     expect(await codeOf(verifyWebhook(body.replace('e1', 'e2'), header, secret, { now }))).toBe('signature_mismatch')
     expect(await codeOf(verifyWebhook(body, `t=${now},v1=${sign(body, 'other')}`, secret, { now }))).toBe(
@@ -35,27 +35,40 @@ describe('verifyWebhook', () => {
     )
   })
 
-  it('rejects a timestamp older than 5 minutes, and accepts a custom tolerance', async () => {
+  it('[WH-004] rejects a timestamp older than 5 minutes, and accepts a custom tolerance', async () => {
     const old = now - 301
     const header = `t=${old},v1=${sign(body, secret, old)}`
     expect(await codeOf(verifyWebhook(body, header, secret, { now }))).toBe('timestamp_outside_tolerance')
     expect((await verifyWebhook(body, header, secret, { now, toleranceSeconds: 600 })).id).toBe('evt_1')
   })
 
-  it('rejects a missing, malformed or non-hex header', async () => {
+  it('[WH-006] rejects a missing, malformed or non-hex header', async () => {
     expect(await codeOf(verifyWebhook(body, undefined, secret, { now }))).toBe('missing_signature')
     expect(await codeOf(verifyWebhook(body, 'v1=abc', secret, { now }))).toBe('malformed_signature')
     expect(await codeOf(verifyWebhook(body, `t=${now},v1=zz`, secret, { now }))).toBe('signature_mismatch')
   })
 
-  it('accepts either signature while a secret is being rotated, and several secrets on our side', async () => {
+  it('[WH-007] accepts either signature while a secret is being rotated, and several secrets on our side', async () => {
     const both = `t=${now},v1=${sign(body, 'whsec_new')},v1=${sign(body, 'whsec_old')}`
     expect((await verifyWebhook(body, both, 'whsec_old', { now })).id).toBe('evt_1')
     const oldOnly = `t=${now},v1=${sign(body, 'whsec_old')}`
     expect((await verifyWebhook(body, oldOnly, ['whsec_new', 'whsec_old'], { now })).id).toBe('evt_1')
   })
 
-  it('round-trips with generateTestSignatureHeader and is reachable from the client', async () => {
+  it('[WH-005] rejects a timestamp more than 5 minutes in the future', async () => {
+    const future = now + 301
+    const header = `t=${future},v1=${sign(body, secret, future)}`
+    expect(await codeOf(verifyWebhook(body, header, secret, { now }))).toBe('timestamp_outside_tolerance')
+  })
+
+  it('[WH-008] rejects a correctly signed body that is not JSON', async () => {
+    const text = 'not json'
+    expect(await codeOf(verifyWebhook(text, `t=${now},v1=${sign(text, secret)}`, secret, { now }))).toBe(
+      'invalid_payload',
+    )
+  })
+
+  it('[WH-009] round-trips with generateTestSignatureHeader and is reachable from the client', async () => {
     const header = await generateTestSignatureHeader(body, secret)
     expect((await new KetaPay('sk_test_x').webhooks.verify(body, header, secret)).id).toBe('evt_1')
   })

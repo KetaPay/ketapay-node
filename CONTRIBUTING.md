@@ -65,7 +65,7 @@ Every change goes through a PR from a branch. CI runs on each PR and shows:
 
 **Before every push**, a git hook runs formatting, lint, types and unit tests (about 5 seconds) and refuses the push if any fail. `npm install` turns it on. Skip it only in an emergency with `git push --no-verify`; CI still runs everything.
 
-Coverage must stay at or above the thresholds in `vitest.config.ts` (85% lines). Raise them when you add tests; never lower them to get a PR through.
+Coverage must stay at or above the thresholds in `vitest.config.ts` (about 90% of lines). Raise them when you add tests; never lower them to get a PR through.
 
 Locally:
 
@@ -77,6 +77,20 @@ npm run test:contract    # SDK requests against a mock built from the spec
 ```
 
 The PR template asks for a summary, the reason and the test plan. Fill it in.
+
+## The test catalogue
+
+`spec/test-catalogue.md` is synced from `documentation/openapi/public/SDK_TEST_CATALOGUE.md` and lists every scenario every KetaPay SDK must test (security, webhooks, requests, errors, resilience, lists, spec, package, operations, end to end). Tag each test with its ID in the test name, like `it('[SEC-002] refuses a plain-http base URL', ...)`; package checks are tagged in the script that runs them. `test/catalogue-coverage.test.ts` fails when a catalogue ID has no tagged test or a test carries an unknown ID.
+
+New scenario: add the row to the catalogue in the documentation repo first, `npm run sync-spec` here, then write the tagged test.
+
+## End-to-end tests
+
+`test/e2e/` runs the real SDK against the staging API with sandbox keys (`npm run test:e2e` with `KETAPAY_E2E_BASE_URL` and `KETAPAY_E2E_SECRET_KEY` set; see `test/e2e/setup.ts` for the optional ones). The **E2E** workflow runs nightly and by hand, reading the settings from Infisical (`ketapay-node-e6-wk`, staging); until they exist it reports "not configured" and passes. **Publish to npm** runs it on the release tag, and refuses a stable (non-beta) release unless it ran and passed.
+
+## Supported runtimes
+
+Customers: **Node 18 or later** (tested on 18, 20, 22 and 24) and Deno; TypeScript 5.0 or later. Development and unit tests use Node 22. The runtime floor is separate from the toolchain on purpose: never raise `engines` just because a dev tool needs a newer Node.
 
 ## No breaking changes in v1
 

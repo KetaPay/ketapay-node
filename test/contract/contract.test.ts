@@ -14,7 +14,7 @@ const ids = {
 }
 const customer = { customerToken: 'ctk_test_contract' }
 
-describe.skipIf(!baseUrl)('contract: SDK requests match the spec', () => {
+describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', () => {
   const k = new KetaPay({ apiKey: 'sk_test_contract', baseUrl, maxRetries: 0 })
 
   it('creates a checkout session with milestones, images and both contacts', async () => {

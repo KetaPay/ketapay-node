@@ -1,16 +1,22 @@
-// Fails when spec/v1.yaml was edited by hand: its contents must match the hash sync-spec wrote.
+// [SPEC-004] Fails when a synced file was edited by hand: its contents must match the hash sync-spec wrote.
 import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 
-const text = readFileSync('spec/v1.yaml', 'utf8')
-const match = text.match(/^# GENERATED: .*\n# sha256: ([0-9a-f]{64})\n\n/)
-if (!match) {
-  console.error('spec/v1.yaml has no GENERATED header. Update it with `npm run sync-spec`, never by hand.')
-  process.exit(1)
+let failed = false
+for (const file of ['spec/v1.yaml', 'spec/test-catalogue.md']) {
+  const text = readFileSync(file, 'utf8')
+  const match = text.match(/^(?:# |<!-- )GENERATED: .*\n(?:# |<!-- )sha256: ([0-9a-f]{64})(?: -->)?\n\n/)
+  if (!match) {
+    console.error(`${file} has no GENERATED header. Update it with \`npm run sync-spec\`, never by hand.`)
+    failed = true
+    continue
+  }
+  const body = text.slice(match[0].length)
+  if (createHash('sha256').update(body).digest('hex') !== match[1]) {
+    console.error(`${file} was edited by hand. Change it in the documentation repo, then \`npm run sync-spec\`.`)
+    failed = true
+    continue
+  }
+  console.log(`${file} matches its recorded hash`)
 }
-const body = text.slice(match[0].length)
-if (createHash('sha256').update(body).digest('hex') !== match[1]) {
-  console.error('spec/v1.yaml was edited by hand. Change the spec in the documentation repo, then `npm run sync-spec`.')
-  process.exit(1)
-}
-console.log('spec/v1.yaml matches its recorded hash')
+process.exit(failed ? 1 : 0)
