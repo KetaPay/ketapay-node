@@ -1,5 +1,7 @@
 # Contributing
 
+This SDK follows the KetaPay SDK standards (`documentation/openapi/public/SDK_STANDARDS.md`), shared by every KetaPay SDK. It is the reference implementation for them.
+
 ## Layout
 
 ```
@@ -39,7 +41,7 @@ Each domain folder has its resource classes, a `types.ts` (friendly names over t
 1. **Change the spec first**, in the documentation repo, in the same piece of work as the API change.
 2. **Sync it here:** `npm run public:check` in the documentation repo, then `npm run sync-spec` here (reads `../documentation/openapi/public/dist/v1.yaml`, or pass a path). Never edit `spec/v1.yaml` by hand: its header records a hash and CI rejects edits.
 3. **Regenerate the types:** `npm run generate`. Never edit `src/generated/` by hand.
-4. **Update the hand-written layer** (`src/resources/`, `src/types.ts`) for any new or changed endpoint, with a test in `test/` and a call in `test/contract/contract.test.ts`.
+4. **Update the hand-written layer** (`src/resources/<domain>/`) for any new or changed endpoint. `test/resources/spec-coverage.test.ts` fails until every operation in the spec has an SDK method sending the spec's method and path: add the new operation to its table, plus a call in `test/contract/contract.test.ts`.
 5. **Run everything:** `npm run lint && npm run typecheck && npm test && npm run test:contract`.
 
 CI enforces this on every PR:
@@ -47,6 +49,7 @@ CI enforces this on every PR:
 | Check               | Fails when                                                                               |
 | ------------------- | ---------------------------------------------------------------------------------------- |
 | `check:spec`        | `spec/v1.yaml` was edited by hand instead of synced                                      |
+| spec coverage test  | an operation in the spec has no SDK method, or an SDK method has no operation            |
 | `check:drift`       | `src/generated/` doesn't match `spec/v1.yaml` (types edited by hand, or not regenerated) |
 | `test:contract`     | The SDK sends a request the spec doesn't allow (runs against a Prism mock of the spec)   |
 | `lint`              | `src` uses Node-only APIs, or code problems                                              |
