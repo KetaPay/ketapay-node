@@ -2,14 +2,17 @@
 # version, writes the changelog and publishes to npm.
 #
 # Publishing uses npm Trusted Publishing: GitHub proves to npm which repo and workflow is publishing,
-# so no long-lived npm token exists. Pre-release versions (0.1.0-beta.1) go to the `next` dist-tag,
+# so no long-lived npm token exists. Provenance is off while this repo is private (npm only issues it
+# for public repos): when the repo goes public, add `"provenance": true` to publishConfig. Pre-release versions (0.1.0-beta.1) go to the `next` dist-tag,
 # so `npm i @ketapay/node` keeps installing the last stable version.
 #
 # Switches (repo Settings > Secrets and variables > Actions > Variables):
 #   RELEASES_ENABLED=true      Release Please runs on every push to main
 #   NPM_PUBLISH_ENABLED=true   merging a release PR publishes to npm
 # One-time bootstrap: if npm needs the package to exist before Trusted Publishing can be linked, add a
-# short-lived granular token as the NPM_TOKEN secret for the first publish, then delete it.
+# 7-day granular token (publish, @ketapay only) as the NPM_TOKEN GitHub secret on THIS repo for the first
+# publish, then delete it. It deliberately does not live in Infisical: the shared pipeline identity would
+# expose it to every repo.
 name: Release
 
 on:
@@ -39,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # Trusted Publishing and provenance
+      id-token: write # Trusted Publishing
     env:
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
