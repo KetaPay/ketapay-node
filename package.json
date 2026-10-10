@@ -61,7 +61,7 @@
     "test:ci": "vitest run --coverage --reporter=default --reporter=github-actions --reporter=json --outputFile.json=reports/unit.json",
     "test:contract": "node scripts/contract-test.mjs",
     "test:contract:ci": "node scripts/contract-test.mjs --reporter=default --reporter=json --outputFile.json=reports/contract.json",
-    "test:e2e": "vitest run test/e2e --passWithNoTests",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts --passWithNoTests",
     "test:catalogue": "vitest run test/catalogue-coverage.test.ts",
     "test:report": "node scripts/test-summary.mjs",
     "smoke:pack": "node scripts/smoke-pack.mjs",
