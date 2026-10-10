@@ -55,7 +55,6 @@ export interface paths {
      *
      *     **Limits.** Amounts above the buyer's verification level are allowed here; the buyer is
      *     asked to verify their identity before paying (the hosted checkout does this for you).
-     *
      */
     post: operations['createCheckoutSession']
     delete?: never
@@ -95,7 +94,6 @@ export interface paths {
      * @description Closes an unpaid session so it can no longer be paid (the deal fell through, the listing
      *     was removed). Only `open` sessions can be cancelled; once paid, the money is in escrow
      *     and only the buyer, the seller or KetaPay can end it.
-     *
      */
     post: operations['cancelCheckoutSession']
     delete?: never
@@ -124,7 +122,6 @@ export interface paths {
      *     send the buyer to the session's `url` to verify. Card payments go through KetaPay's
      *     secure card fields (in `@ketapay/checkout` or the hosted page) so card numbers never
      *     touch your servers.
-     *
      */
     post: operations['createCheckoutSessionBankTransfer']
     delete?: never
@@ -147,7 +144,6 @@ export interface paths {
      * @description Sends a 6-digit code to the customer's email or phone (send one). Limited to 5 codes per
      *     email or phone per hour; a code expires after 10 minutes. Customers without a KetaPay
      *     account can verify too: their account is created when the code is verified.
-     *
      */
     post: operations['createCustomerSession']
     delete?: never
@@ -169,7 +165,6 @@ export interface paths {
      * Exchange the code for a customer token
      * @description Five wrong codes end the session; start a new one. The token is returned only here and
      *     lasts 15 minutes. Keep it on your server and do not log it.
-     *
      */
     post: operations['verifyCustomerSession']
     delete?: never
@@ -230,7 +225,6 @@ export interface paths {
      *     Only the current milestone (the first one not yet released) can be delivered. Moves no
      *     money: the buyer then releases it, reports a problem, or (with `auto_release_hours`)
      *     lets the time run out. Sends `milestone.delivered`.
-     *
      */
     post: operations['deliverMilestone']
     delete?: never
@@ -261,7 +255,6 @@ export interface paths {
      *     Refused while the milestone is disputed (use `POST /disputes/{id}/concede`) or the escrow
      *     is under KetaPay review. Sends
      *     `milestone.released`, and `escrow.completed` after the last milestone.
-     *
      */
     post: operations['releaseMilestone']
     delete?: never
@@ -282,7 +275,6 @@ export interface paths {
      * @description `release_code` escrows only. For your buyer's screen: the buyer gives this code to the
      *     seller once satisfied. Needs the buyer's customer token; never show it to the seller.
      *     KetaPay also sends it to the buyer by email and by WhatsApp or SMS.
-     *
      */
     get: operations['getMilestoneReleaseCode']
     put?: never
@@ -315,7 +307,6 @@ export interface paths {
      *     Refused while a dispute is open (the seller can refund through
      *     `POST /disputes/{id}/concede`). Sends `escrow.refunded`, or `escrow.completed` if some
      *     milestones were already released.
-     *
      */
     post: operations['cancelEscrow']
     delete?: never
@@ -338,7 +329,6 @@ export interface paths {
      * @description Asks KetaPay to review an escrow, for example when you have removed a listing as
      *     fraudulent or banned a user. KetaPay decides what happens, which can include holding
      *     releases while it looks into it. The buyer and seller are not told who flagged it.
-     *
      */
     post: operations['flagEscrow']
     delete?: never
@@ -373,7 +363,6 @@ export interface paths {
      *     cancel calls are refused until the dispute ends. Only one dispute per milestone can be
      *     open at a time. Evidence and the discussion happen in the dispute room at the returned
      *     `url`, or through `POST /disputes/{id}/evidence`. Sends `dispute.opened`.
-     *
      */
     post: operations['openDispute']
     delete?: never
@@ -418,7 +407,6 @@ export interface paths {
      *
      *     Whoever opened the dispute can concede too. Sends `dispute.resolved`, then the money
      *     events.
-     *
      */
     post: operations['concedeDispute']
     delete?: never
@@ -441,7 +429,6 @@ export interface paths {
      * @description Only whoever opened it, with their customer token. No money moves; the deal carries on
      *     where it was, and paused auto-release timers restart. Sends `dispute.resolved` with
      *     `outcome` `withdrawn`.
-     *
      */
     post: operations['withdrawDispute']
     delete?: never
@@ -468,7 +455,6 @@ export interface paths {
      * @description Adds a statement and files to an open dispute, for the buyer or the seller whose customer
      *     token you send. Each side can submit as many times as they need until KetaPay decides.
      *     Sends `dispute.evidence_submitted`.
-     *
      */
     post: operations['submitDisputeEvidence']
     delete?: never
@@ -526,7 +512,6 @@ export interface paths {
      *     KetaPay already sends the bank the agreement, the delivery and the buyer's release; add
      *     anything else that proves delivery (courier receipts, signed handover forms, messages).
      *     Files are uploaded with `POST /files` using purpose `dispute_evidence`.
-     *
      */
     post: operations['submitChargebackEvidence']
     delete?: never
@@ -556,7 +541,6 @@ export interface paths {
      *
      *     A file can only be used by the customer who uploaded it, and only for its purpose.
      *     Unused files are deleted after 24 hours.
-     *
      */
     post: operations['uploadFile']
     delete?: never
@@ -604,7 +588,6 @@ export interface paths {
      *     call `POST /payout_accounts/{id}/confirm` with that code within 10 minutes.
      *
      *     Confirming makes it the customer's payout account; any earlier one stops receiving money.
-     *
      */
     post: operations['createPayoutAccount']
     delete?: never
@@ -627,7 +610,6 @@ export interface paths {
      * @description Activates the account. Five wrong codes cancel it; start again with
      *     `POST /payout_accounts`. Payouts waiting in the seller's KetaPay balance are sent to it
      *     straight away.
-     *
      */
     post: operations['confirmPayoutAccount']
     delete?: never
@@ -650,7 +632,6 @@ export interface paths {
      * Remove a payout account
      * @description Removing the active account makes payouts wait in the seller's KetaPay balance until they
      *     confirm a new one. Payouts already sent are not affected.
-     *
      */
     delete: operations['deletePayoutAccount']
     options?: never
@@ -672,7 +653,6 @@ export interface paths {
      * Create a webhook endpoint
      * @description Registers an HTTPS URL to receive events. The response is the only time `secret` is
      *     shown; store it to verify signatures. Up to 10 endpoints per environment.
-     *
      */
     post: operations['createWebhookEndpoint']
     delete?: never
@@ -720,7 +700,6 @@ export interface paths {
      * @description Sends a signed sample event of the type you choose to the endpoint right now and reports
      *     what your server answered. Works with test and live keys; the event has `livemode` false
      *     and an id starting `evt_test_`, so your handler can skip it.
-     *
      */
     post: operations['testWebhookEndpoint']
     delete?: never
@@ -743,7 +722,6 @@ export interface paths {
      * @description Issues a new signing secret, shown only in this response. The old secret keeps signing
      *     alongside it for 24 hours (two `v1` values in `KetaPay-Signature`), so you can deploy
      *     the new one without missing events.
-     *
      */
     post: operations['rotateWebhookSecret']
     delete?: never
@@ -837,7 +815,6 @@ export interface paths {
      *     | `close_chargeback` | The card bank | `chargeback_status` (`won` or `lost`) |
      *     | `fail_payout` | The seller's bank | `milestone_id` |
      *     | `fail_refund` | The buyer's card bank | `milestone_id` |
-     *
      */
     post: operations['testSimulateEscrow']
     delete?: never
@@ -882,7 +859,6 @@ export interface webhooks {
      * @description The buyer paid and KetaPay holds the money. `data.object` is the new `Escrow`, whose
      *     `checkout_session_id` and `external_reference` tie it to your record. This is the signal
      *     to mark the order or project paid, not the checkout SDK's callback.
-     *
      */
     post: operations['onEscrowFunded']
     delete?: never
@@ -905,7 +881,6 @@ export interface webhooks {
      * @description The seller marked a milestone delivered. `data.object` is the `Escrow`;
      *     `data.milestone_id` names the milestone. Its `auto_release_at` is set if the escrow
      *     auto-releases.
-     *
      */
     post: operations['onMilestoneDelivered']
     delete?: never
@@ -929,7 +904,6 @@ export interface webhooks {
      *     the auto-release time ran out, or KetaPay decided a dispute for the seller.
      *     `data.object` is the `Escrow`; `data.milestone_id` names the milestone, whose
      *     `commission` is your earning.
-     *
      */
     post: operations['onMilestoneReleased']
     delete?: never
@@ -951,7 +925,6 @@ export interface webhooks {
      * escrow.completed
      * @description The escrow ended with at least one milestone paid to the seller: every milestone is
      *     released, or the rest were refunded. Nothing more will move.
-     *
      */
     post: operations['onEscrowCompleted']
     delete?: never
@@ -973,7 +946,6 @@ export interface webhooks {
      * escrow.refunded
      * @description The escrow ended with everything returned to the buyer: it was cancelled before any
      *     release, or KetaPay decided a dispute for the buyer. No commission is earned.
-     *
      */
     post: operations['onEscrowRefunded']
     delete?: never
@@ -1016,7 +988,6 @@ export interface webhooks {
      * @description KetaPay needs more evidence. `data.object.awaiting_evidence_from` says from whom and
      *     `evidence_due_at` by when; KetaPay also messages them. Prompt them in your app if you
      *     built your own dispute screens. Missing the deadline lets KetaPay decide without it.
-     *
      */
     post: operations['onDisputeEvidenceRequested']
     delete?: never
@@ -1058,7 +1029,6 @@ export interface webhooks {
      * dispute.resolved
      * @description The dispute ended. `data.object.outcome` says how. `milestone.released`,
      *     `escrow.completed` or `escrow.refunded` events follow as the money moves.
-     *
      */
     post: operations['onDisputeResolved']
     delete?: never
@@ -1080,7 +1050,6 @@ export interface webhooks {
      * refund.sent
      * @description Money went back to the buyer's card or bank account. `data.object` is the `Refund`.
      *     Card refunds can take 5 to 10 working days to show on the buyer's statement.
-     *
      */
     post: operations['onRefundSent']
     delete?: never
@@ -1103,7 +1072,6 @@ export interface webhooks {
      * @description The refund couldn't go back the way the money came (expired or closed card, account that
      *     can't receive). The money is safe in the buyer's KetaPay balance and KetaPay has asked
      *     them to withdraw it. `data.object` is the `Refund`.
-     *
      */
     post: operations['onRefundFailed']
     delete?: never
@@ -1125,7 +1093,6 @@ export interface webhooks {
      * chargeback.opened
      * @description The buyer's card bank opened a chargeback. KetaPay is contesting it; you don't need to
      *     act. `data.object` is the `Chargeback`.
-     *
      */
     post: operations['onChargebackOpened']
     delete?: never
@@ -1148,7 +1115,6 @@ export interface webhooks {
      * @description The bank decided. `data.object.status` is `won` (nothing changes) or `lost` (the amount
      *     is recovered from the seller and your commission on the affected milestones is reversed;
      *     see `commission_reversed`).
-     *
      */
     post: operations['onChargebackClosed']
     delete?: never
@@ -1190,7 +1156,6 @@ export interface webhooks {
      * payout.failed
      * @description The bank rejected a seller's payout. The money is back in the seller's KetaPay balance
      *     and KetaPay has asked them to fix their account; it is sent again once they do.
-     *
      */
     post: operations['onPayoutFailed']
     delete?: never
@@ -1232,10 +1197,11 @@ export interface components {
      * @example +2348012345678
      */
     Phone: string
-    /** @description Send either `file` (an id from `POST /files` with purpose `agreement`) or `url` (an HTTPS
+    /**
+     * @description Send either `file` (an id from `POST /files` with purpose `agreement`) or `url` (an HTTPS
      *     link KetaPay copies). JPEG, PNG, HEIC or WebP. Responses carry KetaPay's own `url` plus a
      *     small `thumbnail_url`.
-     *      */
+     */
     Image:
       | {
           /** Format: uuid */
@@ -1255,9 +1221,10 @@ export interface components {
           /** Format: uri */
           url: string
         }
-    /** @description Send either `file` (an id from `POST /files`) or `url` (an HTTPS link KetaPay copies, so
+    /**
+     * @description Send either `file` (an id from `POST /files`) or `url` (an HTTPS link KetaPay copies, so
      *     it survives your copy being deleted). Responses always carry KetaPay's own `url`.
-     *      */
+     */
     Attachment:
       | {
           /** @example Project brief.pdf */
@@ -1315,7 +1282,6 @@ export interface components {
          *     `api_key_invalid`, `api_key_expired`, `missing_scope`, `live_mode_not_enabled`,
          *     `idempotency_key_missing`, `idempotency_key_reused`, `rate_limited`, `test_mode_only`,
          *     `internal_error`. New codes may be added.
-         *
          * @example parameter_invalid
          */
         code: string
@@ -1341,7 +1307,6 @@ export interface components {
        * @description `buyer_confirms`: the seller delivers each milestone and the buyer releases it.
        *     `release_code`: in person; the buyer gives the seller a 6-digit code per milestone
        *     once satisfied, and the seller entering it releases that milestone.
-       *
        * @default buyer_confirms
        * @enum {string}
        */
@@ -1350,7 +1315,6 @@ export interface components {
        * @description `buyer_confirms` only. Hours after a milestone is delivered before it releases on its
        *     own if the buyer neither releases it nor reports a problem. Null means it never
        *     releases without the buyer. Typical values: 48 for goods, 168 for services.
-       *
        * @default null
        */
       auto_release_hours?: number | null
@@ -1383,11 +1347,12 @@ export interface components {
       | {
           phone: components['schemas']['Phone']
         }
-    /** @description Your cut, taken from the seller's side of each release. Never charged on money refunded
+    /**
+     * @description Your cut, taken from the seller's side of each release. Never charged on money refunded
      *     to the buyer. `rate_bps` is basis points (500 = 5%). `min_amount` and `max_amount` apply
      *     to the whole escrow; each milestone's release carries its share. Must be within the
      *     maximum rate in your KetaPay agreement.
-     *      */
+     */
     CommissionInput: {
       /** @example 1000 */
       rate_bps: number
@@ -1410,9 +1375,10 @@ export interface components {
        * @example Company website
        */
       title: string
-      /** @description What was agreed, in enough detail for someone else to judge a dispute: condition,
+      /**
+       * @description What was agreed, in enough detail for someone else to judge a dispute: condition,
        *     specification, scope of work, what is included. Shown to both sides.
-       *      */
+       */
       description: string
       /** @description Photos of what is being bought. The first is the cover image. */
       images?: components['schemas']['Image'][]
@@ -1451,14 +1417,14 @@ export interface components {
     /**
      * @description `open`: waiting for payment. `complete`: paid, `escrow_id` is set. `expired`: not paid by
      *     `expires_at`. `cancelled`: you cancelled it.
-     *
      * @enum {string}
      */
     CheckoutSessionStatus: 'open' | 'complete' | 'expired' | 'cancelled'
-    /** @description Totals for the whole escrow, in kobo. `buyer_total = amount + buyer_fee + buyer_vat` and
+    /**
+     * @description Totals for the whole escrow, in kobo. `buyer_total = amount + buyer_fee + buyer_vat` and
      *     `seller_payout = amount - seller_fee - commission`. Until everything is released these
      *     are what will apply; each milestone shows its own share.
-     *      */
+     */
     Fees: {
       amount: components['schemas']['Amount']
       /**
@@ -1621,7 +1587,6 @@ export interface components {
      *     KetaPay is handling it. `completed`: ended with at least one milestone paid to the
      *     seller. `refunded`: ended with everything returned to the buyer. An escrow only exists
      *     once the buyer has paid.
-     *
      * @enum {string}
      */
     EscrowStatus: 'active' | 'disputed' | 'completed' | 'refunded'
@@ -1629,7 +1594,6 @@ export interface components {
      * @description `funded`: money held, waiting for the seller. `delivered`: the seller says it is done;
      *     waiting for the buyer. `released`: paid to the seller. `refunded`: returned to the
      *     buyer. `disputed`: frozen until KetaPay resolves the dispute.
-     *
      * @enum {string}
      */
     MilestoneStatus: 'funded' | 'delivered' | 'released' | 'refunded' | 'disputed'
@@ -1664,7 +1628,6 @@ export interface components {
        * @description `awaiting_account`: in the seller's KetaPay balance until they confirm a payout
        *     account. `processing`: transfer started. `sent`: reached the bank. `failed`: rejected
        *     by the bank and back in the seller's balance.
-       *
        * @enum {string}
        */
       status: 'awaiting_account' | 'processing' | 'sent' | 'failed'
@@ -1834,7 +1797,6 @@ export interface components {
      *     from what was agreed), `damaged`, `incomplete` (only part was delivered). Seller reason:
      *     `buyer_unresponsive` (delivered, but the buyer won't release or respond). Either side:
      *     `other`.
-     *
      * @enum {string}
      */
     DisputeReason: 'not_received' | 'not_as_agreed' | 'damaged' | 'incomplete' | 'buyer_unresponsive' | 'other'
@@ -1870,7 +1832,6 @@ export interface components {
       /**
        * @description `open`: the buyer and seller are trying to agree. `under_review`: a KetaPay mediator
        *     is deciding. `resolved`: ended, see `outcome`.
-       *
        * @enum {string}
        */
       status: 'open' | 'under_review' | 'resolved'
@@ -1878,7 +1839,6 @@ export interface components {
       /**
        * @description Null until resolved. `withdrawn`: the buyer withdrew the dispute and the deal
        *     continues. `partially_refunded`: split between buyer and seller.
-       *
        * @enum {string|null}
        */
       outcome: 'released' | 'refunded' | 'partially_refunded' | 'withdrawn' | null
@@ -1976,7 +1936,6 @@ export interface components {
        * @description `processing`: started. `sent`: accepted by the card network or bank. `failed`: could
        *     not go back the way it came; a new refund with `destination` `ketapay_balance`
        *     follows straight away.
-       *
        * @enum {string}
        */
       status: 'processing' | 'sent' | 'failed'
@@ -2013,7 +1972,6 @@ export interface components {
        * @description `needs_response`: KetaPay is gathering evidence (the seller can add some until
        *     `respond_by`). `under_review`: with the card bank. `won`: reversed in KetaPay's
        *     favour, nothing changes. `lost`: the bank took the money back.
-       *
        * @enum {string}
        */
       status: 'needs_response' | 'under_review' | 'won' | 'lost'
@@ -2051,7 +2009,6 @@ export interface components {
        * @description `pending_confirmation`: waiting for the seller's code. `active`: receives payouts
        *     (one per seller). `inactive`: replaced by a newer confirmed account. `cancelled`: not
        *     confirmed in time, or too many wrong codes.
-       *
        * @enum {string}
        */
       status: 'pending_confirmation' | 'active' | 'inactive' | 'cancelled'
@@ -2228,6 +2185,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "invalid_request_error",
+         *         "code": "parameter_invalid",
+         *         "message": "buyer.phone must be a Nigerian mobile number in E.164 format, like +2348012345678.",
+         *         "param": "buyer.phone",
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2237,6 +2205,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "invalid_request_error",
+         *         "code": "code_invalid",
+         *         "message": "That code is not correct. 4 attempts left.",
+         *         "param": "code",
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2246,6 +2225,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "authentication_error",
+         *         "code": "api_key_invalid",
+         *         "message": "This API key is invalid or has been revoked.",
+         *         "param": null,
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2255,6 +2245,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "permission_error",
+         *         "code": "missing_scope",
+         *         "message": "This key does not have the checkout_sessions:write scope.",
+         *         "param": null,
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2264,6 +2265,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "permission_error",
+         *         "code": "customer_not_allowed",
+         *         "message": "Only the buyer can release this milestone.",
+         *         "param": null,
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2273,6 +2285,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "invalid_request_error",
+         *         "code": "dispute_open",
+         *         "message": "This escrow has an open dispute. KetaPay will release or refund it when the dispute ends.",
+         *         "param": null,
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2282,6 +2305,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "invalid_request_error",
+         *         "code": "resource_not_found",
+         *         "message": "No escrow with id 3b1f6c2e-8d4a-4e7b-9c1d-2a5f8e6b7c90.",
+         *         "param": "id",
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2291,6 +2325,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "idempotency_error",
+         *         "code": "idempotency_key_reused",
+         *         "message": "This Idempotency-Key was already used with a different request.",
+         *         "param": null,
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2304,6 +2349,17 @@ export interface components {
         [name: string]: unknown
       }
       content: {
+        /**
+         * @example {
+         *       "error": {
+         *         "type": "rate_limit_error",
+         *         "code": "rate_limited",
+         *         "message": "Too many requests. Retry after the time in X-RateLimit-Reset.",
+         *         "param": null,
+         *         "request_id": "req_01J9ZK7M2Q4V8XW3B6N5T0R1YH"
+         *       }
+         *     }
+         */
         'application/json': components['schemas']['Error']
       }
     }
@@ -2505,9 +2561,11 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "phone": "+2348012345678"
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['CreateCustomerSessionRequest']
       }
     }
@@ -2632,7 +2690,8 @@ export interface operations {
     }
     requestBody?: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "note": "Designs ready for review. Figma link and exports attached.",
          *       "attachments": [
          *         {
@@ -2640,7 +2699,8 @@ export interface operations {
          *           "url": "https://files.example.com/proj_4471/homepage.png"
          *         }
          *       ]
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['DeliverMilestoneRequest']
       }
     }
@@ -2669,9 +2729,11 @@ export interface operations {
     }
     requestBody?: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "release_code": "731045"
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['ReleaseMilestoneRequest']
       }
     }
@@ -2727,9 +2789,11 @@ export interface operations {
     }
     requestBody?: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "reason": "Project cancelled by agreement"
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['CancelEscrowRequest']
       }
     }
@@ -2757,10 +2821,12 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "reason": "banned_seller",
          *       "note": "Seller account banned on 2026-10-09 after three fraud reports."
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['CreateFlagRequest']
       }
     }
@@ -2824,11 +2890,13 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "milestone_id": "7c2e9a41-3b5d-4f6e-8a1c-9d0b2e4f6a83",
          *       "reason": "not_as_agreed",
          *       "description": "The designs do not follow the brand guide in the brief."
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['CreateDisputeRequest']
       }
     }
@@ -2979,13 +3047,15 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "statement": "The brand guide on page 3 of the brief asks for the purple palette. These designs use blue.",
          *       "files": [
          *         "5d8f2b1a-7c3e-4a9d-b6f0-2e4c8a1b3d57",
          *         "1a3c5e7f-9b2d-4f6a-8c0e-3b5d7f9a1c24"
          *       ]
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['SubmitEvidenceRequest']
       }
     }
@@ -3197,10 +3267,12 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "bank_code": "057",
          *       "account_number": "0123456789"
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['CreatePayoutAccountRequest']
       }
     }
@@ -3317,7 +3389,8 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "url": "https://example.com/webhooks/ketapay",
          *       "enabled_events": [
          *         "escrow.funded",
@@ -3329,7 +3402,8 @@ export interface operations {
          *         "dispute.resolved"
          *       ],
          *       "description": "Order service"
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['CreateWebhookEndpointRequest']
       }
     }
@@ -3394,9 +3468,11 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "status": "enabled"
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['UpdateWebhookEndpointRequest']
       }
     }
@@ -3455,9 +3531,11 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "type": "escrow.funded"
-         *     } */
+         *     }
+         */
         'application/json': {
           type: components['schemas']['EventType']
         }
@@ -3621,10 +3699,12 @@ export interface operations {
     }
     requestBody: {
       content: {
-        /** @example {
+        /**
+         * @example {
          *       "action": "deliver",
          *       "milestone_id": "7c2e9a41-3b5d-4f6e-8a1c-9d0b2e4f6a83"
-         *     } */
+         *     }
+         */
         'application/json': components['schemas']['SimulateRequest']
       }
     }

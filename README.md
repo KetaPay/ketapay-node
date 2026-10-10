@@ -1,6 +1,6 @@
 # KetaPay Node.js library
 
-Server-side library for the [KetaPay API](https://docs.ketapay.com): put escrow inside your product. Typed, no runtime dependencies. Runs on Node 20+, Deno, Bun, Cloudflare Workers and Vercel Edge.
+Server-side library for the [KetaPay API](https://docs.ketapay.com): put escrow inside your product. Typed, no runtime dependencies. Runs on Node 22+, Deno, Bun, Cloudflare Workers and Vercel Edge.
 
 > Pre-release. The API is in design and this package is not published yet.
 
