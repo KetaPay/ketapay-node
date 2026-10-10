@@ -20,8 +20,7 @@ export type Attachment = Schemas['Attachment']
 
 /** A buyer or seller: at least one of `email` and `phone`, both if you have them. */
 export type PartyInput =
-  | { email: string; phone?: string; name?: string | null }
-  | { phone: string; email?: string; name?: string | null }
+  { email: string; phone?: string; name?: string | null } | { phone: string; email?: string; name?: string | null }
 export type Party = Schemas['Party']
 
 /** A list that is not paginated. */

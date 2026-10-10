@@ -44,7 +44,7 @@ export class HttpClient {
     this.fetchImpl = config.fetch ?? globalThis.fetch?.bind(globalThis)
     this.defaultHeaders = config.defaultHeaders ?? {}
     this.log = createLogger(config.logLevel, config.logger)
-    if (!this.fetchImpl) throw new TypeError('KetaPay: no global fetch found. Use Node 20 or later, or pass `fetch`.')
+    if (!this.fetchImpl) throw new TypeError('KetaPay: no global fetch found. Use Node 22 or later, or pass `fetch`.')
   }
 
   request<T>(method: Method, path: string, args: RequestArgs = {}): APIPromise<T> {

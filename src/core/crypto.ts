@@ -1,9 +1,9 @@
-// Web Crypto only, so the SDK runs on Node 20+, Deno, Bun, Cloudflare Workers and Vercel Edge.
+// Web Crypto only, so the SDK runs on Node 22+, Deno, Bun, Cloudflare Workers and Vercel Edge.
 
 function webCrypto(): Crypto {
   const c = globalThis.crypto
   if (!c?.subtle || !c.randomUUID) {
-    throw new Error('KetaPay: Web Crypto is not available in this runtime. Use Node 20 or later.')
+    throw new Error('KetaPay: Web Crypto is not available in this runtime. Use Node 22 or later.')
   }
   return c
 }
@@ -33,9 +33,9 @@ export async function hmacSha256Verify(secret: string, message: string, signatur
   return webCrypto().subtle.verify('HMAC', await hmacKey(secret), signature, encoder.encode(message))
 }
 
-function hexToBytes(hex: string): Uint8Array | null {
+function hexToBytes(hex: string): Uint8Array<ArrayBuffer> | null {
   if (hex.length % 2 !== 0 || !/^[0-9a-f]*$/i.test(hex)) return null
-  const bytes = new Uint8Array(hex.length / 2)
+  const bytes = new Uint8Array(new ArrayBuffer(hex.length / 2))
   for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16)
   return bytes
 }

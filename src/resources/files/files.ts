@@ -12,7 +12,8 @@ export class Files extends Resource {
     const blob =
       params.file instanceof Blob
         ? params.file
-        : new Blob([params.file], { type: params.contentType ?? 'application/octet-stream' })
+        : // Copied so a view over shared memory (which Blob can't take) works too.
+          new Blob([new Uint8Array(params.file)], { type: params.contentType ?? 'application/octet-stream' })
     const form = new FormData()
     form.append('file', blob, params.filename)
     form.append('purpose', params.purpose)
