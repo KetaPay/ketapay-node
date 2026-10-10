@@ -97,21 +97,24 @@ describe('spec coverage', () => {
     expect(spec.size).toBeGreaterThan(30)
   })
 
-  it('has an SDK method for every operation in the spec', () => {
+  it('[SPEC-001] has an SDK method for every operation in the spec', () => {
     const missing = [...spec.keys()].filter((op) => !(op in calls))
     expect(missing, `Add these to the SDK (and to this table): ${missing.join(', ')}`).toEqual([])
   })
 
-  it('has no SDK method for an operation the spec no longer has', () => {
+  it('[SPEC-001] has no SDK method for an operation the spec no longer has', () => {
     const stale = Object.keys(calls).filter((op) => !spec.has(op))
     expect(stale, `Not in the spec anymore: ${stale.join(', ')}`).toEqual([])
   })
 
-  it.each([...spec.entries()].filter(([op]) => op in calls))('%s sends the spec method and path', async (op, def) => {
-    const { fetch, calls: sent } = mockFetch({ body: {} })
-    await calls[op]!(client(fetch))
-    const expected = def.path.replace(/\{(\w+)\}/g, (_, name: string) => ids[name as keyof typeof ids] ?? name)
-    expect(sent[0]!.method).toBe(def.method)
-    expect(new URL(sent[0]!.url).pathname).toBe(`/v1${expected}`)
-  })
+  it.each([...spec.entries()].filter(([op]) => op in calls))(
+    '[SPEC-002] %s sends the spec method and path',
+    async (op, def) => {
+      const { fetch, calls: sent } = mockFetch({ body: {} })
+      await calls[op]!(client(fetch))
+      const expected = def.path.replace(/\{(\w+)\}/g, (_, name: string) => ids[name as keyof typeof ids] ?? name)
+      expect(sent[0]!.method).toBe(def.method)
+      expect(new URL(sent[0]!.url).pathname).toBe(`/v1${expected}`)
+    },
+  )
 })

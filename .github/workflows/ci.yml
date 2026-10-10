@@ -114,22 +114,60 @@ jobs:
         run: npm run --silent test:report >> "$GITHUB_STEP_SUMMARY"
 
   package:
-    name: Build and package smoke test (Node ${{ matrix.node }})
+    name: Package works on Node ${{ matrix.node }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        node: [22, 24]
+        node: [18, 20, 22, 24] # oldest supported to newest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: Build with the development toolchain (Node 22)
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Switch to Node ${{ matrix.node }} for the customer side
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Packed package installs and works (ESM, CommonJS, TypeScript 5.0 and current)
+        run: npm run smoke:pack
+
+  edge:
+    name: Package works on Deno
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
       - uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build
-        run: npm run build
-      - name: Packed package installs and works (ESM, CommonJS, TypeScript)
-        run: npm run smoke:pack
+      - run: npm run build
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Built package runs on Deno
+        run: npm run smoke:deno
+
+  catalogue:
+    name: Test catalogue coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Every catalogue scenario has a tagged test
+        run: npm run test:catalogue

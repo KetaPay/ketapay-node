@@ -3,7 +3,7 @@
 #
 # 1. Resolves the release tag (the latest GitHub release unless you give one), checks it is on main,
 #    matches package.json and isn't on npm yet.
-# 2. Runs the whole CI suite on that exact tag.
+# 2. Runs the whole CI suite and the E2E suite on that exact tag (E2E is required for stable releases).
 # 3. Builds, smoke-tests the packed package, and publishes it: versions with a pre-release suffix
 #    (0.1.0-beta.1) under the `next` dist-tag, others under `latest`.
 #
@@ -72,9 +72,21 @@ jobs:
     with:
       ref: ${{ needs.prepare.outputs.tag }}
 
+  e2e:
+    name: E2E on the release tag
+    needs: prepare
+    uses: ./.github/workflows/e2e.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      ref: ${{ needs.prepare.outputs.tag }}
+      # Stable releases must pass E2E; betas run it when staging is configured.
+      required: ${{ needs.prepare.outputs.dist_tag == 'latest' }}
+
   publish:
     name: Publish
-    needs: [prepare, checks]
+    needs: [prepare, checks, e2e]
     runs-on: ubuntu-latest
     permissions:
       contents: read
