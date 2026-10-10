@@ -22,6 +22,11 @@ permissions:
   contents: write
   pull-requests: write
 
+# Never two releases at once.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   release-please:
     if: vars.RELEASES_ENABLED == 'true'
@@ -35,8 +40,15 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  publish:
+  # The full CI suite (every Node version, contract tests, spec checks, smoke test of the packed
+  # package) runs again on the exact release commit. Nothing publishes unless all of it passes.
+  checks:
     needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: [release-please, checks]
     if: needs.release-please.outputs.release_created == 'true' && vars.NPM_PUBLISH_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -59,7 +71,9 @@ jobs:
       - name: npm with Trusted Publishing support
         run: npm install -g npm@11.6.2
       - run: npm ci
-      - run: npm run lint && npm run typecheck && npm test && npm run build
+      - run: npm run build
+      - name: Smoke test the exact package being published
+        run: npm run smoke:pack
       - name: Pick the dist-tag
         id: tag
         run: |

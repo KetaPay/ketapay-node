@@ -57,6 +57,7 @@
     "build": "tsup",
     "test": "vitest run",
     "test:contract": "node scripts/contract-test.mjs",
+    "smoke:pack": "node scripts/smoke-pack.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
