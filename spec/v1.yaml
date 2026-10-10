@@ -1,5 +1,7 @@
-openapi: 3.1.0
+# GENERATED: do not edit. Bundled from documentation/openapi/public and copied by `npm run sync-spec`.
+# sha256: fe9ea8f68208a3543e2467f270dcd3dd71abb3cd0631cbae4d492a9a938ea42a
 
+openapi: 3.1.0
 info:
   title: KetaPay API
   version: v1
@@ -135,7 +137,6 @@ info:
       from KetaPay. Handle them under your data processing agreement with KetaPay and the
       Nigeria Data Protection Act 2023.
     - **Reporting a vulnerability:** security@ketapay.com (see ketapay.com/.well-known/security.txt).
-
   license:
     name: Proprietary
     url: https://ketapay.com/terms
@@ -143,14 +144,11 @@ info:
     name: KetaPay developers
     email: developers@ketapay.com
     url: https://docs.ketapay.com
-
 servers:
   - url: https://api.ketapay.com/v1
     description: Sandbox and live (the key prefix picks which)
-
 security:
   - secretKey: []
-
 tags:
   - name: Checkout sessions
     description: |
@@ -250,13 +248,12 @@ tags:
     description: |
       Every change you can act on, kept for 30 days. Use the list to catch up on anything your
       endpoint missed.
-
 paths:
-  # ── Checkout sessions ───────────────────────────────────────────────────────
   /checkout_sessions:
     post:
       operationId: createCheckoutSession
-      tags: [Checkout sessions]
+      tags:
+        - Checkout sessions
       summary: Create a checkout session
       description: |
         Starts checkout for one agreement. Call this from your server with your secret key.
@@ -387,10 +384,10 @@ paths:
           $ref: '#/components/responses/IdempotencyConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
     get:
       operationId: listCheckoutSessions
-      tags: [Checkout sessions]
+      tags:
+        - Checkout sessions
       summary: List checkout sessions
       x-required-scope: checkout_sessions:read
       parameters:
@@ -410,7 +407,8 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/ListMeta'
                   - type: object
-                    required: [data]
+                    required:
+                      - data
                     properties:
                       data:
                         type: array
@@ -422,11 +420,11 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /checkout_sessions/{id}:
     get:
       operationId: getCheckoutSession
-      tags: [Checkout sessions]
+      tags:
+        - Checkout sessions
       summary: Get a checkout session
       x-required-scope: checkout_sessions:read
       parameters:
@@ -447,11 +445,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /checkout_sessions/{id}/cancel:
     post:
       operationId: cancelCheckoutSession
-      tags: [Checkout sessions]
+      tags:
+        - Checkout sessions
       summary: Cancel a checkout session
       description: |
         Closes an unpaid session so it can no longer be paid (the deal fell through, the listing
@@ -476,11 +474,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /checkout_sessions/{id}/bank_transfer:
     post:
       operationId: createCheckoutSessionBankTransfer
-      tags: [Checkout sessions]
+      tags:
+        - Checkout sessions
       summary: Get bank transfer details to pay
       description: |
         For your own payment screen. Returns a one-time account number for this session; when
@@ -516,12 +514,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
-  # ── Customer sessions ───────────────────────────────────────────────────────
   /customer_sessions:
     post:
       operationId: createCustomerSession
-      tags: [Customer sessions]
+      tags:
+        - Customer sessions
       summary: Send a one-time code to a customer
       description: |
         Sends a 6-digit code to the customer's email or phone (send one). Limited to 5 codes per
@@ -553,11 +550,11 @@ paths:
           $ref: '#/components/responses/IdempotencyConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /customer_sessions/{id}/verify:
     post:
       operationId: verifyCustomerSession
-      tags: [Customer sessions]
+      tags:
+        - Customer sessions
       summary: Exchange the code for a customer token
       description: |
         Five wrong codes end the session; start a new one. The token is returned only here and
@@ -583,12 +580,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
-  # ── Escrows ─────────────────────────────────────────────────────────────────
   /escrows:
     get:
       operationId: listEscrows
-      tags: [Escrows]
+      tags:
+        - Escrows
       summary: List escrows
       description: Escrows started from your checkout sessions, newest first.
       x-required-scope: escrows:read
@@ -621,7 +617,8 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/ListMeta'
                   - type: object
-                    required: [data]
+                    required:
+                      - data
                     properties:
                       data:
                         type: array
@@ -633,11 +630,11 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /escrows/{id}:
     get:
       operationId: getEscrow
-      tags: [Escrows]
+      tags:
+        - Escrows
       summary: Get an escrow
       x-required-scope: escrows:read
       parameters:
@@ -658,11 +655,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /escrows/{id}/milestones/{milestone_id}/deliver:
     post:
       operationId: deliverMilestone
-      tags: [Escrows]
+      tags:
+        - Escrows
       summary: Mark a milestone delivered
       description: |
         The seller says their part of this milestone is done, with the seller's customer token.
@@ -702,11 +699,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /escrows/{id}/milestones/{milestone_id}/release:
     post:
       operationId: releaseMilestone
-      tags: [Escrows]
+      tags:
+        - Escrows
       summary: Release a milestone to the seller
       description: |
         Pays the seller for this milestone. The buyer's decision, proven one of two ways:
@@ -751,11 +748,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /escrows/{id}/milestones/{milestone_id}/release_code:
     get:
       operationId: getMilestoneReleaseCode
-      tags: [Escrows]
+      tags:
+        - Escrows
       summary: Get the buyer's release code
       description: |
         `release_code` escrows only. For your buyer's screen: the buyer gives this code to the
@@ -785,11 +782,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /escrows/{id}/cancel:
     post:
       operationId: cancelEscrow
-      tags: [Escrows]
+      tags:
+        - Escrows
       summary: Cancel and refund the buyer
       description: |
         Refunds the buyer every milestone not yet released; released milestones stay paid. Money
@@ -832,11 +829,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /escrows/{id}/flag:
     post:
       operationId: flagEscrow
-      tags: [Escrows]
+      tags:
+        - Escrows
       summary: Flag an escrow for review
       description: |
         Asks KetaPay to review an escrow, for example when you have removed a listing as
@@ -872,11 +869,11 @@ paths:
           $ref: '#/components/responses/IdempotencyConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /escrows/{id}/disputes:
     post:
       operationId: openDispute
-      tags: [Disputes]
+      tags:
+        - Disputes
       summary: Open a dispute
       description: |
         Either side can open one, with their customer token, about one milestone or the whole
@@ -926,10 +923,10 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
     get:
       operationId: listEscrowDisputes
-      tags: [Disputes]
+      tags:
+        - Disputes
       summary: List an escrow's disputes
       description: Every dispute on the escrow, open and resolved, newest first.
       x-required-scope: escrows:read
@@ -942,7 +939,9 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [object, data]
+                required:
+                  - object
+                  - data
                 properties:
                   object:
                     type: string
@@ -957,11 +956,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /disputes/{id}:
     get:
       operationId: getDispute
-      tags: [Disputes]
+      tags:
+        - Disputes
       summary: Get a dispute
       x-required-scope: escrows:read
       parameters:
@@ -979,11 +978,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /disputes/{id}/concede:
     post:
       operationId: concedeDispute
-      tags: [Disputes]
+      tags:
+        - Disputes
       summary: Settle against yourself
       description: |
         Ends the dispute in the other side's favour, the same rule as in the KetaPay app: a
@@ -1018,11 +1017,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /disputes/{id}/withdraw:
     post:
       operationId: withdrawDispute
-      tags: [Disputes]
+      tags:
+        - Disputes
       summary: Withdraw a dispute
       description: |
         Only whoever opened it, with their customer token. No money moves; the deal carries on
@@ -1052,11 +1051,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /disputes/{id}/evidence:
     post:
       operationId: submitDisputeEvidence
-      tags: [Disputes]
+      tags:
+        - Disputes
       summary: Submit evidence
       description: |
         Adds a statement and files to an open dispute, for the buyer or the seller whose customer
@@ -1099,10 +1098,10 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
     get:
       operationId: listDisputeEvidence
-      tags: [Disputes]
+      tags:
+        - Disputes
       summary: List evidence
       description: Everything both sides have submitted, oldest first. Needs the buyer's or the seller's customer token.
       x-required-scope: escrows:act
@@ -1118,7 +1117,9 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [object, data]
+                required:
+                  - object
+                  - data
                 properties:
                   object:
                     type: string
@@ -1135,12 +1136,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
-  # ── Chargebacks ─────────────────────────────────────────────────────────────
   /escrows/{id}/chargebacks:
     get:
       operationId: listEscrowChargebacks
-      tags: [Chargebacks]
+      tags:
+        - Chargebacks
       summary: List an escrow's chargebacks
       x-required-scope: escrows:read
       parameters:
@@ -1152,7 +1152,9 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [object, data]
+                required:
+                  - object
+                  - data
                 properties:
                   object:
                     type: string
@@ -1167,11 +1169,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /chargebacks/{id}:
     get:
       operationId: getChargeback
-      tags: [Chargebacks]
+      tags:
+        - Chargebacks
       summary: Get a chargeback
       x-required-scope: escrows:read
       parameters:
@@ -1189,11 +1191,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /chargebacks/{id}/evidence:
     post:
       operationId: submitChargebackEvidence
-      tags: [Chargebacks]
+      tags:
+        - Chargebacks
       summary: Add evidence against a chargeback
       description: |
         For the seller, with their customer token, while the chargeback is `needs_response`.
@@ -1232,12 +1234,11 @@ paths:
           $ref: '#/components/responses/StateConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
-  # ── Files ───────────────────────────────────────────────────────────────────
   /files:
     post:
       operationId: uploadFile
-      tags: [Files]
+      tags:
+        - Files
       summary: Upload a file
       description: |
         `purpose` decides who may upload and where the file can be used:
@@ -1263,7 +1264,9 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [file, purpose]
+              required:
+                - file
+                - purpose
               properties:
                 file:
                   type: string
@@ -1288,12 +1291,11 @@ paths:
           $ref: '#/components/responses/IdempotencyConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
-  # ── Payout accounts ─────────────────────────────────────────────────────────
   /banks:
     get:
       operationId: listBanks
-      tags: [Banks]
+      tags:
+        - Banks
       summary: List banks
       description: Every bank and microfinance bank a payout can go to, sorted by name. Not paginated.
       x-required-scope: payout_accounts:read
@@ -1304,7 +1306,9 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [object, data]
+                required:
+                  - object
+                  - data
                 properties:
                   object:
                     type: string
@@ -1317,11 +1321,11 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /payout_accounts:
     post:
       operationId: createPayoutAccount
-      tags: [Payout accounts]
+      tags:
+        - Payout accounts
       summary: Add a seller's payout account
       description: |
         Starts adding a bank account for the customer whose token you send. KetaPay looks up the
@@ -1363,10 +1367,10 @@ paths:
           $ref: '#/components/responses/IdempotencyConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
     get:
       operationId: listPayoutAccounts
-      tags: [Payout accounts]
+      tags:
+        - Payout accounts
       summary: List a customer's payout accounts
       x-required-scope: payout_accounts:read
       security:
@@ -1379,7 +1383,9 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [object, data]
+                required:
+                  - object
+                  - data
                 properties:
                   object:
                     type: string
@@ -1394,11 +1400,11 @@ paths:
           $ref: '#/components/responses/NotParty'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /payout_accounts/{id}/confirm:
     post:
       operationId: confirmPayoutAccount
-      tags: [Payout accounts]
+      tags:
+        - Payout accounts
       summary: Confirm a payout account with the seller's code
       description: |
         Activates the account. Five wrong codes cancel it; start again with
@@ -1430,11 +1436,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /payout_accounts/{id}:
     delete:
       operationId: deletePayoutAccount
-      tags: [Payout accounts]
+      tags:
+        - Payout accounts
       summary: Remove a payout account
       description: |
         Removing the active account makes payouts wait in the seller's KetaPay balance until they
@@ -1460,12 +1466,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
-  # ── Webhook endpoints and events ────────────────────────────────────────────
   /webhook_endpoints:
     post:
       operationId: createWebhookEndpoint
-      tags: [Webhook endpoints]
+      tags:
+        - Webhook endpoints
       summary: Create a webhook endpoint
       description: |
         Registers an HTTPS URL to receive events. The response is the only time `secret` is
@@ -1481,7 +1486,14 @@ paths:
               $ref: '#/components/schemas/CreateWebhookEndpointRequest'
             example:
               url: https://example.com/webhooks/ketapay
-              enabled_events: [escrow.funded, milestone.delivered, milestone.released, escrow.completed, escrow.refunded, dispute.opened, dispute.resolved]
+              enabled_events:
+                - escrow.funded
+                - milestone.delivered
+                - milestone.released
+                - escrow.completed
+                - escrow.refunded
+                - dispute.opened
+                - dispute.resolved
               description: Order service
       responses:
         '201':
@@ -1492,7 +1504,8 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/WebhookEndpoint'
                   - type: object
-                    required: [secret]
+                    required:
+                      - secret
                     properties:
                       secret:
                         type: string
@@ -1506,10 +1519,10 @@ paths:
           $ref: '#/components/responses/IdempotencyConflict'
         '429':
           $ref: '#/components/responses/RateLimited'
-
     get:
       operationId: listWebhookEndpoints
-      tags: [Webhook endpoints]
+      tags:
+        - Webhook endpoints
       summary: List webhook endpoints
       x-required-scope: webhook_endpoints:read
       parameters:
@@ -1524,7 +1537,8 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/ListMeta'
                   - type: object
-                    required: [data]
+                    required:
+                      - data
                     properties:
                       data:
                         type: array
@@ -1534,11 +1548,11 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /webhook_endpoints/{id}:
     post:
       operationId: updateWebhookEndpoint
-      tags: [Webhook endpoints]
+      tags:
+        - Webhook endpoints
       summary: Update a webhook endpoint
       description: Change the URL or the events, or re-enable an endpoint marked `failing` once it is fixed.
       x-required-scope: webhook_endpoints:write
@@ -1568,10 +1582,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
     get:
       operationId: getWebhookEndpoint
-      tags: [Webhook endpoints]
+      tags:
+        - Webhook endpoints
       summary: Get a webhook endpoint
       x-required-scope: webhook_endpoints:read
       parameters:
@@ -1589,10 +1603,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
     delete:
       operationId: deleteWebhookEndpoint
-      tags: [Webhook endpoints]
+      tags:
+        - Webhook endpoints
       summary: Delete a webhook endpoint
       description: Stops all deliveries to this endpoint, including pending retries.
       x-required-scope: webhook_endpoints:write
@@ -1611,11 +1625,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /webhook_endpoints/{id}/test:
     post:
       operationId: testWebhookEndpoint
-      tags: [Webhook endpoints]
+      tags:
+        - Webhook endpoints
       summary: Send a test event
       description: |
         Sends a signed sample event of the type you choose to the endpoint right now and reports
@@ -1631,7 +1645,8 @@ paths:
           application/json:
             schema:
               type: object
-              required: [type]
+              required:
+                - type
               properties:
                 type:
                   $ref: '#/components/schemas/EventType'
@@ -1650,11 +1665,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /webhook_endpoints/{id}/rotate_secret:
     post:
       operationId: rotateWebhookSecret
-      tags: [Webhook endpoints]
+      tags:
+        - Webhook endpoints
       summary: Rotate the signing secret
       description: |
         Issues a new signing secret, shown only in this response. The old secret keeps signing
@@ -1671,7 +1686,10 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [object, secret, previous_secret_expires_at]
+                required:
+                  - object
+                  - secret
+                  - previous_secret_expires_at
                 properties:
                   object:
                     type: string
@@ -1688,11 +1706,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /events:
     get:
       operationId: listEvents
-      tags: [Events]
+      tags:
+        - Events
       summary: List events
       description: Events from the last 30 days, newest first.
       x-required-scope: events:read
@@ -1717,7 +1735,8 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/ListMeta'
                   - type: object
-                    required: [data]
+                    required:
+                      - data
                     properties:
                       data:
                         type: array
@@ -1729,11 +1748,11 @@ paths:
           $ref: '#/components/responses/Unauthenticated'
         '429':
           $ref: '#/components/responses/RateLimited'
-
   /events/{id}:
     get:
       operationId: getEvent
-      tags: [Events]
+      tags:
+        - Events
       summary: Get an event
       x-required-scope: events:read
       parameters:
@@ -1751,12 +1770,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '429':
           $ref: '#/components/responses/RateLimited'
-
-  # ── Test helpers ────────────────────────────────────────────────────────────
   /test_helpers/checkout_sessions/{id}/pay:
     post:
       operationId: testPayCheckoutSession
-      tags: [Test helpers]
+      tags:
+        - Test helpers
       summary: Pay a checkout session (sandbox)
       description: Funds the session as if the buyer paid, creates the escrow and sends `escrow.funded`.
       x-required-scope: test_helpers:write
@@ -1771,7 +1789,9 @@ paths:
               properties:
                 method:
                   type: string
-                  enum: [card, bank_transfer]
+                  enum:
+                    - card
+                    - bank_transfer
                   default: bank_transfer
       responses:
         '200':
@@ -1786,11 +1806,11 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/StateConflict'
-
   /test_helpers/escrows/{id}/simulate:
     post:
       operationId: testSimulateEscrow
-      tags: [Test helpers]
+      tags:
+        - Test helpers
       summary: Simulate an escrow event (sandbox)
       description: |
         Does what a buyer, seller, bank or KetaPay mediator would do, with the same rules and
@@ -1834,12 +1854,12 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/StateConflict'
-
 webhooks:
   checkout_session.expired:
     post:
       operationId: onCheckoutSessionExpired
-      tags: [Events]
+      tags:
+        - Events
       summary: checkout_session.expired
       description: A checkout session reached `expires_at` without being paid. `data.object` is the `CheckoutSession`.
       parameters:
@@ -1849,11 +1869,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   escrow.funded:
     post:
       operationId: onEscrowFunded
-      tags: [Events]
+      tags:
+        - Events
       summary: escrow.funded
       description: |
         The buyer paid and KetaPay holds the money. `data.object` is the new `Escrow`, whose
@@ -1866,11 +1886,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   milestone.delivered:
     post:
       operationId: onMilestoneDelivered
-      tags: [Events]
+      tags:
+        - Events
       summary: milestone.delivered
       description: |
         The seller marked a milestone delivered. `data.object` is the `Escrow`;
@@ -1883,11 +1903,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   milestone.released:
     post:
       operationId: onMilestoneReleased
-      tags: [Events]
+      tags:
+        - Events
       summary: milestone.released
       description: |
         A milestone was paid to the seller: the buyer released it, the release code was entered,
@@ -1901,11 +1921,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   escrow.completed:
     post:
       operationId: onEscrowCompleted
-      tags: [Events]
+      tags:
+        - Events
       summary: escrow.completed
       description: |
         The escrow ended with at least one milestone paid to the seller: every milestone is
@@ -1917,11 +1937,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   escrow.refunded:
     post:
       operationId: onEscrowRefunded
-      tags: [Events]
+      tags:
+        - Events
       summary: escrow.refunded
       description: |
         The escrow ended with everything returned to the buyer: it was cancelled before any
@@ -1933,11 +1953,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   dispute.opened:
     post:
       operationId: onDisputeOpened
-      tags: [Events]
+      tags:
+        - Events
       summary: dispute.opened
       description: The buyer reported a problem. The money stays held. `data.object` is the `Dispute`.
       parameters:
@@ -1947,11 +1967,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   dispute.evidence_requested:
     post:
       operationId: onDisputeEvidenceRequested
-      tags: [Events]
+      tags:
+        - Events
       summary: dispute.evidence_requested
       description: |
         KetaPay needs more evidence. `data.object.awaiting_evidence_from` says from whom and
@@ -1964,11 +1984,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   dispute.evidence_submitted:
     post:
       operationId: onDisputeEvidenceSubmitted
-      tags: [Events]
+      tags:
+        - Events
       summary: dispute.evidence_submitted
       description: The buyer or the seller added evidence. `data.object` is the `Dispute`. The evidence itself is not included.
       parameters:
@@ -1978,11 +1998,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   dispute.resolved:
     post:
       operationId: onDisputeResolved
-      tags: [Events]
+      tags:
+        - Events
       summary: dispute.resolved
       description: |
         The dispute ended. `data.object.outcome` says how. `milestone.released`,
@@ -1994,11 +2014,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   refund.sent:
     post:
       operationId: onRefundSent
-      tags: [Events]
+      tags:
+        - Events
       summary: refund.sent
       description: |
         Money went back to the buyer's card or bank account. `data.object` is the `Refund`.
@@ -2010,11 +2030,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   refund.failed:
     post:
       operationId: onRefundFailed
-      tags: [Events]
+      tags:
+        - Events
       summary: refund.failed
       description: |
         The refund couldn't go back the way the money came (expired or closed card, account that
@@ -2027,11 +2047,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   chargeback.opened:
     post:
       operationId: onChargebackOpened
-      tags: [Events]
+      tags:
+        - Events
       summary: chargeback.opened
       description: |
         The buyer's card bank opened a chargeback. KetaPay is contesting it; you don't need to
@@ -2043,11 +2063,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   chargeback.closed:
     post:
       operationId: onChargebackClosed
-      tags: [Events]
+      tags:
+        - Events
       summary: chargeback.closed
       description: |
         The bank decided. `data.object.status` is `won` (nothing changes) or `lost` (the amount
@@ -2060,11 +2080,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   payout.sent:
     post:
       operationId: onPayoutSent
-      tags: [Events]
+      tags:
+        - Events
       summary: payout.sent
       description: A seller's payout for a milestone reached their bank. `data.object` is the `Payout`.
       parameters:
@@ -2074,11 +2094,11 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
   payout.failed:
     post:
       operationId: onPayoutFailed
-      tags: [Events]
+      tags:
+        - Events
       summary: payout.failed
       description: |
         The bank rejected a seller's payout. The money is back in the seller's KetaPay balance
@@ -2090,7 +2110,6 @@ webhooks:
       responses:
         '200':
           $ref: '#/components/responses/EventAcknowledged'
-
 components:
   securitySchemes:
     secretKey:
@@ -2110,14 +2129,12 @@ components:
         Proof that your customer approved this call, from `POST /customer_sessions/{id}/verify`.
         Sent together with your secret key. Valid for 15 minutes, for that customer's escrows
         only.
-
   headers:
     KetaPay-Request-Id:
       description: Unique id of this request. Quote it to support.
       schema:
         type: string
         example: req_01J9ZK7M2Q4V8XW3B6N5T0R1YH
-
   parameters:
     Id:
       name: id
@@ -2170,7 +2187,6 @@ components:
       schema:
         type: string
         example: t=1791640000,v1=5257a869e7ecebeda32affa62cdca3fa51cad7e77a0e56ff536d0ce8e108d8bd
-
   requestBodies:
     EventDelivery:
       required: true
@@ -2184,13 +2200,13 @@ components:
         application/json:
           schema:
             type: object
-            required: [code]
+            required:
+              - code
             properties:
               code:
                 type: string
-                pattern: '^\d{6}$'
+                pattern: ^\d{6}$
                 example: '482913'
-
   responses:
     EscrowUpdated:
       description: The updated escrow
@@ -2328,15 +2344,12 @@ components:
               message: Too many requests. Retry after the time in X-RateLimit-Reset.
               param: null
               request_id: req_01J9ZK7M2Q4V8XW3B6N5T0R1YH
-
   schemas:
-    # ── Shared ──────────────────────────────────────────────────────────────────
     Amount:
       type: integer
       minimum: 0
       description: Amount in kobo
       example: 45000000
-
     Metadata:
       type: object
       maxProperties: 20
@@ -2348,26 +2361,24 @@ components:
       description: Your own key-value pairs. KetaPay stores them and never reads them.
       example:
         project_id: '4471'
-
     ExternalReference:
-      type: [string, 'null']
+      type:
+        - string
+        - 'null'
       maxLength: 255
       description: Your own id for this object, for example your order or project id. Filterable.
       example: proj_4471
-
     Email:
       type: string
       format: email
       maxLength: 254
       description: Email address. Matched without regard to case.
       example: ada@example.com
-
     Phone:
       type: string
-      pattern: '^\+234[789][01]\d{8}$'
+      pattern: ^\+234[789][01]\d{8}$
       description: Nigerian mobile number in E.164 format
       example: '+2348012345678'
-
     Image:
       type: object
       description: |
@@ -2376,13 +2387,15 @@ components:
         small `thumbnail_url`.
       anyOf:
         - type: object
-          required: [file]
+          required:
+            - file
           properties:
             file:
               type: string
               format: uuid
         - type: object
-          required: [url]
+          required:
+            - url
           properties:
             url:
               type: string
@@ -2399,10 +2412,11 @@ components:
           format: uri
           readOnly: true
         alt:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 200
           description: Short description, for screen readers
-
     Attachment:
       type: object
       description: |
@@ -2410,13 +2424,15 @@ components:
         it survives your copy being deleted). Responses always carry KetaPay's own `url`.
       anyOf:
         - type: object
-          required: [file]
+          required:
+            - file
           properties:
             file:
               type: string
               format: uuid
         - type: object
-          required: [url]
+          required:
+            - url
           properties:
             url:
               type: string
@@ -2432,10 +2448,12 @@ components:
         url:
           type: string
           format: uri
-
     Deleted:
       type: object
-      required: [id, object, deleted]
+      required:
+        - id
+        - object
+        - deleted
       properties:
         id:
           type: string
@@ -2445,10 +2463,12 @@ components:
         deleted:
           type: boolean
           const: true
-
     ListMeta:
       type: object
-      required: [object, has_more, next_cursor]
+      required:
+        - object
+        - has_more
+        - next_cursor
       properties:
         object:
           type: string
@@ -2456,16 +2476,23 @@ components:
         has_more:
           type: boolean
         next_cursor:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           description: Pass as `cursor` to get the next page; null on the last page
-
     Error:
       type: object
-      required: [error]
+      required:
+        - error
       properties:
         error:
           type: object
-          required: [type, code, message, param, request_id]
+          required:
+            - type
+            - code
+            - message
+            - param
+            - request_id
           properties:
             type:
               type: string
@@ -2497,33 +2524,42 @@ components:
               type: string
               description: Human-readable explanation for your logs. Do not branch on it.
             param:
-              type: [string, 'null']
+              type:
+                - string
+                - 'null'
               description: The request field at fault, in dot notation
               example: buyer.phone
             request_id:
               type: string
               example: req_01J9ZK7M2Q4V8XW3B6N5T0R1YH
-
-    # ── Agreement terms ─────────────────────────────────────────────────────────
     Category:
       type: string
-      enum: [goods, services, property, vehicle, digital, other]
+      enum:
+        - goods
+        - services
+        - property
+        - vehicle
+        - digital
+        - other
       default: other
       description: What kind of deal this is. KetaPay uses it for risk checks and dispute handling.
-
     Release:
       type: object
       properties:
         method:
           type: string
-          enum: [buyer_confirms, release_code]
+          enum:
+            - buyer_confirms
+            - release_code
           default: buyer_confirms
           description: |
             `buyer_confirms`: the seller delivers each milestone and the buyer releases it.
             `release_code`: in person; the buyer gives the seller a 6-digit code per milestone
             once satisfied, and the seller entering it releases that milestone.
         auto_release_hours:
-          type: [integer, 'null']
+          type:
+            - integer
+            - 'null'
           minimum: 24
           maximum: 720
           default: null
@@ -2531,10 +2567,11 @@ components:
             `buyer_confirms` only. Hours after a milestone is delivered before it releases on its
             own if the buyer neither releases it nor reports a problem. Null means it never
             releases without the buyer. Typical values: 48 for goods, 168 for services.
-
     MilestoneInput:
       type: object
-      required: [title, amount]
+      required:
+        - title
+        - amount
       properties:
         title:
           type: string
@@ -2542,28 +2579,33 @@ components:
           maxLength: 120
           example: Design
         description:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 500
         amount:
           allOf:
             - $ref: '#/components/schemas/Amount'
           minimum: 1
         due_date:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date
           description: When the seller expects to deliver. Shown to both sides; KetaPay does not act on it.
-
     PartyInput:
       type: object
       description: At least one of `email` and `phone`. Both is better.
       anyOf:
         - type: object
-          required: [email]
+          required:
+            - email
           properties:
             email:
               $ref: '#/components/schemas/Email'
         - type: object
-          required: [phone]
+          required:
+            - phone
           properties:
             phone:
               $ref: '#/components/schemas/Phone'
@@ -2573,14 +2615,16 @@ components:
         phone:
           $ref: '#/components/schemas/Phone'
         name:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 100
           description: Shown on the checkout and in messages until the person sets their own name on KetaPay
           example: Ada Obi
-
     CommissionInput:
       type: object
-      required: [rate_bps]
+      required:
+        - rate_bps
       description: |
         Your cut, taken from the seller's side of each release. Never charged on money refunded
         to the buyer. `rate_bps` is basis points (500 = 5%). `min_amount` and `max_amount` apply
@@ -2601,11 +2645,14 @@ components:
             - $ref: '#/components/schemas/Amount'
             - type: 'null'
           default: null
-
-    # ── Checkout sessions ───────────────────────────────────────────────────────
     CreateCheckoutSessionRequest:
       type: object
-      required: [amount, title, description, buyer, seller]
+      required:
+        - amount
+        - title
+        - description
+        - buyer
+        - seller
       properties:
         amount:
           allOf:
@@ -2614,7 +2661,8 @@ components:
           description: The full agreed price in kobo, before KetaPay's fee. Must equal the sum of `milestones` when given.
         currency:
           type: string
-          enum: [NGN]
+          enum:
+            - NGN
           default: NGN
         category:
           $ref: '#/components/schemas/Category'
@@ -2644,7 +2692,9 @@ components:
           items:
             $ref: '#/components/schemas/Attachment'
         url:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uri
           description: The listing, project or deal on your site
         milestones:
@@ -2674,24 +2724,35 @@ components:
           format: uri
           description: Where the buyer goes after paying. KetaPay appends `?checkout_session_id=<id>`.
         cancel_url:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uri
           description: Where the buyer goes if they leave without paying
         external_reference:
           $ref: '#/components/schemas/ExternalReference'
         metadata:
           $ref: '#/components/schemas/Metadata'
-
     CheckoutSessionStatus:
       type: string
-      enum: [open, complete, expired, cancelled]
+      enum:
+        - open
+        - complete
+        - expired
+        - cancelled
       description: |
         `open`: waiting for payment. `complete`: paid, `escrow_id` is set. `expired`: not paid by
         `expires_at`. `cancelled`: you cancelled it.
-
     Fees:
       type: object
-      required: [amount, buyer_fee, buyer_vat, buyer_total, seller_fee, commission, seller_payout]
+      required:
+        - amount
+        - buyer_fee
+        - buyer_vat
+        - buyer_total
+        - seller_fee
+        - commission
+        - seller_payout
       description: |
         Totals for the whole escrow, in kobo. `buyer_total = amount + buyer_fee + buyer_vat` and
         `seller_payout = amount - seller_fee - commission`. Until everything is released these
@@ -2729,7 +2790,6 @@ components:
             - $ref: '#/components/schemas/Amount'
           description: What the seller receives once everything is released
           example: 132750000
-
     CheckoutSession:
       type: object
       required:
@@ -2797,7 +2857,9 @@ components:
           items:
             $ref: '#/components/schemas/Attachment'
         url_on_platform:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uri
           description: The `url` you sent at creation
         milestones:
@@ -2816,14 +2878,20 @@ components:
             - $ref: '#/components/schemas/CommissionInput'
             - type: 'null'
         escrow_id:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uuid
           description: Set once the buyer has paid
         return_url:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uri
         cancel_url:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uri
         external_reference:
           $ref: '#/components/schemas/ExternalReference'
@@ -2833,27 +2901,31 @@ components:
           type: string
           format: date-time
         completed_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
         cancelled_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
         created_at:
           type: string
           format: date-time
-
-    # ── Customer sessions ───────────────────────────────────────────────────────
     CreateCustomerSessionRequest:
       type: object
       description: Exactly one of `email` and `phone`; the code goes there.
       oneOf:
         - type: object
-          required: [email]
+          required:
+            - email
           properties:
             email:
               $ref: '#/components/schemas/Email'
         - type: object
-          required: [phone]
+          required:
+            - phone
           properties:
             phone:
               $ref: '#/components/schemas/Phone'
@@ -2862,10 +2934,16 @@ components:
           $ref: '#/components/schemas/Email'
         phone:
           $ref: '#/components/schemas/Phone'
-
     CustomerSession:
       type: object
-      required: [id, object, email, phone, status, channel, expires_at]
+      required:
+        - id
+        - object
+        - email
+        - phone
+        - status
+        - channel
+        - expires_at
       properties:
         id:
           type: string
@@ -2883,19 +2961,31 @@ components:
             - type: 'null'
         status:
           type: string
-          enum: [code_sent, verified, failed, expired]
+          enum:
+            - code_sent
+            - verified
+            - failed
+            - expired
         channel:
           type: string
-          enum: [email, whatsapp, sms]
+          enum:
+            - email
+            - whatsapp
+            - sms
           description: Where the code was delivered
         expires_at:
           type: string
           format: date-time
           description: When the code stops working
-
     CustomerToken:
       type: object
-      required: [object, token, expires_at, email, phone, has_claimed_account]
+      required:
+        - object
+        - token
+        - expires_at
+        - email
+        - phone
+        - has_claimed_account
       properties:
         object:
           type: string
@@ -2919,10 +3009,16 @@ components:
             - type: 'null'
         has_claimed_account:
           type: boolean
-
     BankTransferInstructions:
       type: object
-      required: [object, checkout_session_id, bank_name, account_number, account_name, amount, expires_at]
+      required:
+        - object
+        - checkout_session_id
+        - bank_name
+        - account_number
+        - account_name
+        - amount
+        - expires_at
       properties:
         object:
           type: string
@@ -2935,7 +3031,7 @@ components:
           example: Zenith Bank
         account_number:
           type: string
-          pattern: '^\d{10}$'
+          pattern: ^\d{10}$
           example: '9912345678'
         account_name:
           type: string
@@ -2948,28 +3044,37 @@ components:
         expires_at:
           type: string
           format: date-time
-
-    # ── Escrows ─────────────────────────────────────────────────────────────────
     EscrowStatus:
       type: string
-      enum: [active, disputed, completed, refunded]
+      enum:
+        - active
+        - disputed
+        - completed
+        - refunded
       description: |
         `active`: money held, milestones in progress. `disputed`: the buyer reported a problem;
         KetaPay is handling it. `completed`: ended with at least one milestone paid to the
         seller. `refunded`: ended with everything returned to the buyer. An escrow only exists
         once the buyer has paid.
-
     MilestoneStatus:
       type: string
-      enum: [funded, delivered, released, refunded, disputed]
+      enum:
+        - funded
+        - delivered
+        - released
+        - refunded
+        - disputed
       description: |
         `funded`: money held, waiting for the seller. `delivered`: the seller says it is done;
         waiting for the buyer. `released`: paid to the seller. `refunded`: returned to the
         buyer. `disputed`: frozen until KetaPay resolves the dispute.
-
     Party:
       type: object
-      required: [email, phone, name, has_claimed_account]
+      required:
+        - email
+        - phone
+        - name
+        - has_claimed_account
       properties:
         email:
           oneOf:
@@ -2980,17 +3085,23 @@ components:
             - $ref: '#/components/schemas/Phone'
             - type: 'null'
         name:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
         has_claimed_account:
           type: boolean
           description: Whether the person has signed in to KetaPay
-
     Delivery:
       type: object
-      required: [note, attachments, delivered_at]
+      required:
+        - note
+        - attachments
+        - delivered_at
       properties:
         note:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 160
         attachments:
           type: array
@@ -2999,10 +3110,20 @@ components:
         delivered_at:
           type: string
           format: date-time
-
     Payout:
       type: object
-      required: [id, object, livemode, escrow_id, milestone_id, amount, status, bank_name, account_number_last4, sent_at, failure_reason]
+      required:
+        - id
+        - object
+        - livemode
+        - escrow_id
+        - milestone_id
+        - amount
+        - status
+        - bank_name
+        - account_number_last4
+        - sent_at
+        - failure_reason
       properties:
         id:
           type: string
@@ -3022,23 +3143,34 @@ components:
           $ref: '#/components/schemas/Amount'
         status:
           type: string
-          enum: [awaiting_account, processing, sent, failed]
+          enum:
+            - awaiting_account
+            - processing
+            - sent
+            - failed
           description: |
             `awaiting_account`: in the seller's KetaPay balance until they confirm a payout
             account. `processing`: transfer started. `sent`: reached the bank. `failed`: rejected
             by the bank and back in the seller's balance.
         bank_name:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
         account_number_last4:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           example: '6789'
         sent_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
         failure_reason:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           example: Account closed
-
     Milestone:
       type: object
       required:
@@ -3073,11 +3205,15 @@ components:
         title:
           type: string
         description:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
         amount:
           $ref: '#/components/schemas/Amount'
         due_date:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date
         status:
           $ref: '#/components/schemas/MilestoneStatus'
@@ -3087,7 +3223,9 @@ components:
             - $ref: '#/components/schemas/Delivery'
             - type: 'null'
         auto_release_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
           description: When it releases if the buyer does nothing. Null if the escrow never auto-releases or it isn't delivered yet.
         seller_fee:
@@ -3109,15 +3247,21 @@ components:
             - $ref: '#/components/schemas/Refund'
             - type: 'null'
         released_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
         refunded_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
-
     TimelineEntry:
       type: object
-      required: [type, milestone_id, occurred_at]
+      required:
+        - type
+        - milestone_id
+        - occurred_at
       properties:
         type:
           type: string
@@ -3136,12 +3280,13 @@ components:
             - chargeback_closed
           description: New entry types may be added.
         milestone_id:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uuid
         occurred_at:
           type: string
           format: date-time
-
     Escrow:
       type: object
       required:
@@ -3220,11 +3365,15 @@ components:
           type: string
           format: uuid
         open_dispute_id:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uuid
           description: The dispute currently open, if any. `GET /escrows/{id}/disputes` lists them all.
         open_chargeback_id:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uuid
           description: A card chargeback currently being contested, if any
         flagged:
@@ -3246,15 +3395,18 @@ components:
           type: string
           format: date-time
         ended_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
           description: When it became `completed` or `refunded`
-
     DeliverMilestoneRequest:
       type: object
       properties:
         note:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 160
           description: What was delivered, for the buyer
         attachments:
@@ -3262,18 +3414,20 @@ components:
           maxItems: 10
           items:
             $ref: '#/components/schemas/Attachment'
-
     ReleaseMilestoneRequest:
       type: object
       properties:
         release_code:
           type: string
-          pattern: '^\d{6}$'
+          pattern: ^\d{6}$
           description: Required for `release_code` escrows
-
     ReleaseCode:
       type: object
-      required: [object, escrow_id, milestone_id, code]
+      required:
+        - object
+        - escrow_id
+        - milestone_id
+        - code
       properties:
         object:
           type: string
@@ -3286,31 +3440,45 @@ components:
           format: uuid
         code:
           type: string
-          pattern: '^\d{6}$'
+          pattern: ^\d{6}$
           example: '731045'
-
     CancelEscrowRequest:
       type: object
       properties:
         reason:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 500
-
     CreateFlagRequest:
       type: object
-      required: [reason]
+      required:
+        - reason
       properties:
         reason:
           type: string
-          enum: [fraudulent_listing, banned_seller, banned_buyer, suspicious_activity, other]
+          enum:
+            - fraudulent_listing
+            - banned_seller
+            - banned_buyer
+            - suspicious_activity
+            - other
         note:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 1000
           description: What you know. Only KetaPay sees it.
-
     Flag:
       type: object
-      required: [id, object, escrow_id, reason, note, status, created_at]
+      required:
+        - id
+        - object
+        - escrow_id
+        - reason
+        - note
+        - status
+        - created_at
       properties:
         id:
           type: string
@@ -3323,32 +3491,48 @@ components:
           format: uuid
         reason:
           type: string
-          enum: [fraudulent_listing, banned_seller, banned_buyer, suspicious_activity, other]
+          enum:
+            - fraudulent_listing
+            - banned_seller
+            - banned_buyer
+            - suspicious_activity
+            - other
         note:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
         status:
           type: string
-          enum: [pending_review, reviewed]
+          enum:
+            - pending_review
+            - reviewed
         created_at:
           type: string
           format: date-time
-
-    # ── Disputes ────────────────────────────────────────────────────────────────
     DisputeReason:
       type: string
-      enum: [not_received, not_as_agreed, damaged, incomplete, buyer_unresponsive, other]
+      enum:
+        - not_received
+        - not_as_agreed
+        - damaged
+        - incomplete
+        - buyer_unresponsive
+        - other
       description: |
         Buyer reasons: `not_received` (goods or work never arrived), `not_as_agreed` (differs
         from what was agreed), `damaged`, `incomplete` (only part was delivered). Seller reason:
         `buyer_unresponsive` (delivered, but the buyer won't release or respond). Either side:
         `other`.
-
     CreateDisputeRequest:
       type: object
-      required: [reason, description]
+      required:
+        - reason
+        - description
       properties:
         milestone_id:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uuid
           description: The milestone in question. Leave out for the whole escrow.
         reason:
@@ -3364,10 +3548,25 @@ components:
           items:
             type: string
             format: uuid
-
     Dispute:
       type: object
-      required: [id, object, livemode, escrow_id, milestone_id, opened_by, status, reason, outcome, resolved_by, url, awaiting_evidence_from, evidence_due_at, evidence_count, opened_at, resolved_at]
+      required:
+        - id
+        - object
+        - livemode
+        - escrow_id
+        - milestone_id
+        - opened_by
+        - status
+        - reason
+        - outcome
+        - resolved_by
+        - url
+        - awaiting_evidence_from
+        - evidence_due_at
+        - evidence_count
+        - opened_at
+        - resolved_at
       properties:
         id:
           type: string
@@ -3381,29 +3580,49 @@ components:
           type: string
           format: uuid
         milestone_id:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uuid
           description: Null when the dispute covers the whole escrow
         opened_by:
           type: string
-          enum: [buyer, seller]
+          enum:
+            - buyer
+            - seller
         status:
           type: string
-          enum: [open, under_review, resolved]
+          enum:
+            - open
+            - under_review
+            - resolved
           description: |
             `open`: the buyer and seller are trying to agree. `under_review`: a KetaPay mediator
             is deciding. `resolved`: ended, see `outcome`.
         reason:
           $ref: '#/components/schemas/DisputeReason'
         outcome:
-          type: [string, 'null']
-          enum: [released, refunded, partially_refunded, withdrawn, null]
+          type:
+            - string
+            - 'null'
+          enum:
+            - released
+            - refunded
+            - partially_refunded
+            - withdrawn
+            - null
           description: |
             Null until resolved. `withdrawn`: the buyer withdrew the dispute and the deal
             continues. `partially_refunded`: split between buyer and seller.
         resolved_by:
-          type: [string, 'null']
-          enum: [buyer, seller, ketapay, null]
+          type:
+            - string
+            - 'null'
+          enum:
+            - buyer
+            - seller
+            - ketapay
+            - null
           description: Who ended it. A party can only end it against themselves (conceding) or by withdrawing their own dispute.
         refunded_amount:
           oneOf:
@@ -3416,11 +3635,19 @@ components:
           description: The dispute room, where the buyer and seller add evidence and talk to KetaPay
           example: https://app.ketapay.com/disputes/8e2f4a6c-1d3b-4c7e-9a5f-0b2d4f6a8c13
         awaiting_evidence_from:
-          type: [string, 'null']
-          enum: [buyer, seller, both, null]
+          type:
+            - string
+            - 'null'
+          enum:
+            - buyer
+            - seller
+            - both
+            - null
           description: Who KetaPay is waiting on for evidence, if anyone
         evidence_due_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
           description: Deadline for the evidence KetaPay asked for
         evidence_count:
@@ -3431,12 +3658,14 @@ components:
           type: string
           format: date-time
         resolved_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
-
     SubmitEvidenceRequest:
       type: object
-      required: [statement]
+      required:
+        - statement
       properties:
         statement:
           type: string
@@ -3450,10 +3679,16 @@ components:
           items:
             type: string
             format: uuid
-
     Evidence:
       type: object
-      required: [id, object, dispute_id, submitted_by, statement, files, created_at]
+      required:
+        - id
+        - object
+        - dispute_id
+        - submitted_by
+        - statement
+        - files
+        - created_at
       properties:
         id:
           type: string
@@ -3466,7 +3701,9 @@ components:
           format: uuid
         submitted_by:
           type: string
-          enum: [buyer, seller]
+          enum:
+            - buyer
+            - seller
         statement:
           type: string
         files:
@@ -3476,15 +3713,23 @@ components:
         created_at:
           type: string
           format: date-time
-
-    # ── Files ───────────────────────────────────────────────────────────────────
     FilePurpose:
       type: string
-      enum: [agreement, delivery, dispute_evidence]
-
+      enum:
+        - agreement
+        - delivery
+        - dispute_evidence
     File:
       type: object
-      required: [id, object, purpose, name, mime_type, size_bytes, url, created_at]
+      required:
+        - id
+        - object
+        - purpose
+        - name
+        - mime_type
+        - size_bytes
+        - url
+        - created_at
       properties:
         id:
           type: string
@@ -3510,11 +3755,20 @@ components:
         created_at:
           type: string
           format: date-time
-
-    # ── Refunds and chargebacks ─────────────────────────────────────────────────
     Refund:
       type: object
-      required: [id, object, livemode, escrow_id, milestone_id, amount, destination, status, last4, sent_at, failure_reason]
+      required:
+        - id
+        - object
+        - livemode
+        - escrow_id
+        - milestone_id
+        - amount
+        - destination
+        - status
+        - last4
+        - sent_at
+        - failure_reason
       properties:
         id:
           type: string
@@ -3534,29 +3788,53 @@ components:
           $ref: '#/components/schemas/Amount'
         destination:
           type: string
-          enum: [card, bank_account, ketapay_balance]
+          enum:
+            - card
+            - bank_account
+            - ketapay_balance
           description: Where the money went. `ketapay_balance` after a failed card or bank refund.
         status:
           type: string
-          enum: [processing, sent, failed]
+          enum:
+            - processing
+            - sent
+            - failed
           description: |
             `processing`: started. `sent`: accepted by the card network or bank. `failed`: could
             not go back the way it came; a new refund with `destination` `ketapay_balance`
             follows straight away.
         last4:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           description: Last 4 digits of the card or bank account
           example: '4081'
         sent_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
         failure_reason:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           example: Card expired
-
     Chargeback:
       type: object
-      required: [id, object, livemode, escrow_id, milestone_ids, amount, reason, status, respond_by, recovered_from_seller, commission_reversed, opened_at, closed_at]
+      required:
+        - id
+        - object
+        - livemode
+        - escrow_id
+        - milestone_ids
+        - amount
+        - reason
+        - status
+        - respond_by
+        - recovered_from_seller
+        - commission_reversed
+        - opened_at
+        - closed_at
       properties:
         id:
           type: string
@@ -3579,17 +3857,28 @@ components:
           $ref: '#/components/schemas/Amount'
         reason:
           type: string
-          enum: [fraudulent, not_received, not_as_described, duplicate, other]
+          enum:
+            - fraudulent
+            - not_received
+            - not_as_described
+            - duplicate
+            - other
           description: The reason the card bank gave
         status:
           type: string
-          enum: [needs_response, under_review, won, lost]
+          enum:
+            - needs_response
+            - under_review
+            - won
+            - lost
           description: |
             `needs_response`: KetaPay is gathering evidence (the seller can add some until
             `respond_by`). `under_review`: with the card bank. `won`: reversed in KetaPay's
             favour, nothing changes. `lost`: the bank took the money back.
         respond_by:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
         recovered_from_seller:
           allOf:
@@ -3603,13 +3892,16 @@ components:
           type: string
           format: date-time
         closed_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
-
-    # ── Payout accounts ─────────────────────────────────────────────────────────
     Bank:
       type: object
-      required: [code, name, logo_url]
+      required:
+        - code
+        - name
+        - logo_url
       properties:
         code:
           type: string
@@ -3618,24 +3910,35 @@ components:
           type: string
           example: Zenith Bank
         logo_url:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uri
-
     CreatePayoutAccountRequest:
       type: object
-      required: [bank_code, account_number]
+      required:
+        - bank_code
+        - account_number
       properties:
         bank_code:
           type: string
           description: From `GET /banks`
         account_number:
           type: string
-          pattern: '^\d{10}$'
+          pattern: ^\d{10}$
           description: 10-digit NUBAN
-
     PayoutAccount:
       type: object
-      required: [id, object, status, bank_code, bank_name, account_number_last4, account_name, created_at, confirmed_at]
+      required:
+        - id
+        - object
+        - status
+        - bank_code
+        - bank_name
+        - account_number_last4
+        - account_name
+        - created_at
+        - confirmed_at
       properties:
         id:
           type: string
@@ -3645,7 +3948,11 @@ components:
           const: payout_account
         status:
           type: string
-          enum: [pending_confirmation, active, inactive, cancelled]
+          enum:
+            - pending_confirmation
+            - active
+            - inactive
+            - cancelled
           description: |
             `pending_confirmation`: waiting for the seller's code. `active`: receives payouts
             (one per seller). `inactive`: replaced by a newer confirmed account. `cancelled`: not
@@ -3666,10 +3973,10 @@ components:
           type: string
           format: date-time
         confirmed_at:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: date-time
-
-    # ── Webhook endpoints and events ────────────────────────────────────────────
     EventType:
       type: string
       enum:
@@ -3690,15 +3997,16 @@ components:
         - chargeback.closed
         - payout.failed
       description: New event types may be added. Ignore types you don't handle.
-
     CreateWebhookEndpointRequest:
       type: object
-      required: [url, enabled_events]
+      required:
+        - url
+        - enabled_events
       properties:
         url:
           type: string
           format: uri
-          pattern: '^https://'
+          pattern: ^https://
         enabled_events:
           type: array
           minItems: 1
@@ -3709,11 +4017,12 @@ components:
               - type: string
                 const: '*'
         description:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 200
         metadata:
           $ref: '#/components/schemas/Metadata'
-
     UpdateWebhookEndpointRequest:
       type: object
       minProperties: 1
@@ -3721,23 +4030,32 @@ components:
         url:
           type: string
           format: uri
-          pattern: '^https://'
+          pattern: ^https://
         enabled_events:
           type: array
           minItems: 1
           items:
             type: string
         description:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           maxLength: 200
         status:
           type: string
-          enum: [enabled, disabled]
+          enum:
+            - enabled
+            - disabled
           description: '`enabled` re-enables a `failing` endpoint; `disabled` pauses deliveries.'
-
     WebhookTestResult:
       type: object
-      required: [object, event_id, delivered, status_code, response_ms, error]
+      required:
+        - object
+        - event_id
+        - delivered
+        - status_code
+        - response_ms
+        - error
       properties:
         object:
           type: string
@@ -3749,19 +4067,25 @@ components:
           type: boolean
           description: True when your endpoint answered 2xx within 10 seconds
         status_code:
-          type: [integer, 'null']
+          type:
+            - integer
+            - 'null'
           example: 200
         response_ms:
-          type: [integer, 'null']
+          type:
+            - integer
+            - 'null'
           example: 184
         error:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           description: Why it failed, when no status code came back (timeout, TLS, DNS)
           example: null
-
     SimulateRequest:
       type: object
-      required: [action]
+      required:
+        - action
       properties:
         action:
           type: string
@@ -3778,30 +4102,50 @@ components:
             - fail_payout
             - fail_refund
         milestone_id:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
           format: uuid
         actor:
           type: string
-          enum: [buyer, seller]
+          enum:
+            - buyer
+            - seller
         reason:
           $ref: '#/components/schemas/DisputeReason'
         from:
           type: string
-          enum: [buyer, seller, both]
+          enum:
+            - buyer
+            - seller
+            - both
         outcome:
           type: string
-          enum: [released, refunded, partially_refunded]
+          enum:
+            - released
+            - refunded
+            - partially_refunded
         refunded_amount:
           $ref: '#/components/schemas/Amount'
         amount:
           $ref: '#/components/schemas/Amount'
         chargeback_status:
           type: string
-          enum: [won, lost]
-
+          enum:
+            - won
+            - lost
     WebhookEndpoint:
       type: object
-      required: [id, object, livemode, url, enabled_events, description, status, metadata, created_at]
+      required:
+        - id
+        - object
+        - livemode
+        - url
+        - enabled_events
+        - description
+        - status
+        - metadata
+        - created_at
       properties:
         id:
           type: string
@@ -3819,20 +4163,31 @@ components:
           items:
             type: string
         description:
-          type: [string, 'null']
+          type:
+            - string
+            - 'null'
         status:
           type: string
-          enum: [enabled, failing, disabled]
+          enum:
+            - enabled
+            - failing
+            - disabled
           description: '`failing`: deliveries have failed for 3 days; fix the endpoint and re-enable it in the dashboard.'
         metadata:
           $ref: '#/components/schemas/Metadata'
         created_at:
           type: string
           format: date-time
-
     Event:
       type: object
-      required: [id, object, type, api_version, livemode, created_at, data]
+      required:
+        - id
+        - object
+        - type
+        - api_version
+        - livemode
+        - created_at
+        - data
       properties:
         id:
           type: string
@@ -3853,7 +4208,8 @@ components:
           format: date-time
         data:
           type: object
-          required: [object]
+          required:
+            - object
           properties:
             object:
               description: The object as it was when the event happened
@@ -3874,10 +4230,11 @@ components:
                   refund: '#/components/schemas/Refund'
                   chargeback: '#/components/schemas/Chargeback'
             milestone_id:
-              type: [string, 'null']
+              type:
+                - string
+                - 'null'
               format: uuid
               description: For `milestone.*` events, the milestone that changed
-
   examples:
     OpenCheckoutSession:
       summary: Open, waiting for payment
@@ -3942,7 +4299,6 @@ components:
         completed_at: null
         cancelled_at: null
         created_at: '2026-10-10T09:30:00Z'
-
     ActiveEscrow:
       summary: Active, first milestone delivered
       value:
