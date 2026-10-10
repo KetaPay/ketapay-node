@@ -21,7 +21,8 @@ async function waitForPrism() {
 let code = 1
 try {
   await waitForPrism()
-  const tests = spawn('npx', ['vitest', 'run', 'test/contract'], {
+  // Extra arguments go to vitest, e.g. reporters for CI.
+  const tests = spawn('npx', ['vitest', 'run', 'test/contract', ...process.argv.slice(2)], {
     stdio: 'inherit',
     env: { ...process.env, KETAPAY_MOCK_URL: url },
   })

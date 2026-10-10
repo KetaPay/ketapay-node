@@ -52,6 +52,27 @@ CI enforces this on every PR:
 | `lint`              | `src` uses Node-only APIs, or code problems                                              |
 | `typecheck`, `test` | The hand-written layer doesn't fit the generated types, or behaviour regressed           |
 
+## Pull requests and tests
+
+Every change goes through a PR from a branch. CI runs on each PR and shows:
+
+- **PR title is a conventional commit**: `feat:`, `fix:`, `chore:` and so on, because release notes are built from it.
+- **Checks (Node 22 and 24)**: audit, spec snapshot, generated types, formatting, lint, types, unit tests with coverage, contract tests against the spec, build, and the smoke test of the packed package.
+- **A test report** on the run's Summary page: totals, coverage, and every test with ✅ or ❌, grouped by file. Failing tests are also marked inline on the PR diff. The HTML coverage report is attached to the run as `coverage-report`.
+
+Coverage must stay at or above the thresholds in `vitest.config.ts` (85% lines). Raise them when you add tests; never lower them to get a PR through.
+
+Locally:
+
+```sh
+npm test                 # unit tests
+npm run test:coverage    # with coverage; open coverage/index.html
+npx vitest --ui          # visual test runner in the browser (npm i -D @vitest/ui once)
+npm run test:contract    # SDK requests against a mock built from the spec
+```
+
+The PR template asks for a summary, the reason and the test plan. Fill it in.
+
 ## No breaking changes in v1
 
 Adding endpoints, fields, enum values and optional parameters is fine. Removing or renaming anything, or making an optional field required, is not: mark it `deprecated` in the spec, keep it working for at least 6 months, and remove it only in v2.
