@@ -1,0 +1,10 @@
+// Every domain, re-exported. Each folder holds its resource classes, its types and an index.
+export * from './checkout/index.js'
+export type * from './common/index.js'
+export * from './customers/index.js'
+export * from './disputes/index.js'
+export * from './escrows/index.js'
+export * from './files/index.js'
+export * from './payouts/index.js'
+export * from './test-helpers/index.js'
+export * from './webhooks/index.js'

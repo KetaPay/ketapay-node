@@ -1,10 +1,19 @@
 {
   "name": "@ketapay/node",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Official Node.js library for the KetaPay escrow API",
   "private": true,
   "license": "UNLICENSED",
+  "keywords": [
+    "ketapay",
+    "escrow",
+    "payments",
+    "nigeria",
+    "api",
+    "sdk"
+  ],
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,12 +33,13 @@
     "dist"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "generate": "openapi-typescript spec/v1.yaml -o src/generated/openapi.ts --default-non-nullable false && prettier --write src/generated/openapi.ts",
     "sync-spec": "node scripts/sync-spec.mjs",
     "check:drift": "npm run generate && git diff --exit-code -- src/generated",
+    "lint": "eslint src test",
     "typecheck": "tsc --noEmit",
     "build": "tsup",
     "test": "vitest run",
@@ -38,12 +48,15 @@
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "9.17.0",
     "@stoplight/prism-cli": "5.12.0",
     "@types/node": "22.10.2",
+    "eslint": "9.17.0",
     "openapi-typescript": "7.4.4",
     "prettier": "3.4.2",
     "tsup": "8.3.5",
     "typescript": "5.7.2",
+    "typescript-eslint": "8.18.1",
     "vitest": "2.1.8"
   }
 }

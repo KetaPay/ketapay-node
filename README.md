@@ -1,6 +1,6 @@
 # KetaPay Node.js library
 
-Server-side library for the [KetaPay API](https://docs.ketapay.com): put escrow inside your product. Typed, no runtime dependencies, Node 18 or later.
+Server-side library for the [KetaPay API](https://docs.ketapay.com): put escrow inside your product. Typed, no runtime dependencies. Runs on Node 20+, Deno, Bun, Cloudflare Workers and Vercel Edge.
 
 > Pre-release. The API is in design and this package is not published yet.
 
@@ -80,10 +80,14 @@ for await (const escrow of ketapay.escrows.list({ status: 'active' })) {
 Verify against the raw body, before any JSON parsing:
 
 ```ts
-app.post('/webhooks/ketapay', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/webhooks/ketapay', express.raw({ type: 'application/json' }), async (req, res) => {
   let event
   try {
-    event = ketapay.webhooks.verify(req.body, req.header('KetaPay-Signature'), process.env.KETAPAY_WEBHOOK_SECRET!)
+    event = await ketapay.webhooks.verify(
+      req.body,
+      req.header('KetaPay-Signature'),
+      process.env.KETAPAY_WEBHOOK_SECRET!,
+    )
   } catch {
     return res.sendStatus(400)
   }
@@ -94,7 +98,7 @@ app.post('/webhooks/ketapay', express.raw({ type: 'application/json' }), (req, r
 })
 ```
 
-While rotating a secret, pass both: `verify(body, header, [newSecret, oldSecret])`.
+While rotating a secret, pass both: `verify(body, header, [newSecret, oldSecret])`. On Next.js or other edge handlers, pass `await request.text()` as the body.
 
 ## Errors and retries
 
@@ -112,7 +116,32 @@ try {
 }
 ```
 
+`NotFoundError` (404) and `ConflictError` (409, for example `dispute_open`) are subclasses of `InvalidRequestError`.
+
 Network errors, `429` and `5xx` are retried twice with backoff, reusing the same `Idempotency-Key`, so a retried request never runs twice. Change with `new KetaPay({ apiKey, maxRetries, timeoutMs })`, or per call: `{ maxRetries: 0 }`.
+
+## Request ids, headers and cancelling
+
+```ts
+// The raw response and request id (quote it to KetaPay support)
+const { data: escrow, requestId, response } = await ketapay.escrows.retrieve(id).withResponse()
+
+// Cancel a call (and its retries)
+const controller = new AbortController()
+ketapay.escrows.list({}, { signal: controller.signal })
+
+// Extra headers for every call, or one call
+new KetaPay({ apiKey, defaultHeaders: { 'X-Trace-Id': traceId } })
+ketapay.escrows.retrieve(id, { headers: { 'X-Trace-Id': traceId } })
+```
+
+## Logging
+
+Retries are logged at `warn` (the default). `logLevel: 'debug'` logs every request and response: method, path, status, request id and timing, never keys, customer tokens or bodies. Send logs anywhere with `logger`:
+
+```ts
+new KetaPay({ apiKey, logLevel: 'debug', logger: pino() })
+```
 
 ## Sandbox
 
