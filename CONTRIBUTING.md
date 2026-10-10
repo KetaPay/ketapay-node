@@ -57,8 +57,10 @@ CI enforces this on every PR:
 Every change goes through a PR from a branch. CI runs on each PR and shows:
 
 - **PR title is a conventional commit**: `feat:`, `fix:`, `chore:` and so on, because release notes are built from it.
-- **Checks (Node 22 and 24)**: audit, spec snapshot, generated types, formatting, lint, types, unit tests with coverage, contract tests against the spec, build, and the smoke test of the packed package.
+- **One check per kind of test**, so a red ❌ tells you what broke: Spec (snapshot and generated types), Format/lint/types/audit, Unit tests (Node 22 and 24, with coverage), Contract tests (SDK against the spec), Build and package smoke test (Node 22 and 24).
 - **A test report** on the run's Summary page: totals, coverage, and every test with ✅ or ❌, grouped by file. Failing tests are also marked inline on the PR diff. The HTML coverage report is attached to the run as `coverage-report`.
+
+**Before every push**, a git hook runs formatting, lint, types and unit tests (about 5 seconds) and refuses the push if any fail. `npm install` turns it on. Skip it only in an emergency with `git push --no-verify`; CI still runs everything.
 
 Coverage must stay at or above the thresholds in `vitest.config.ts` (85% lines). Raise them when you add tests; never lower them to get a PR through.
 
@@ -77,15 +79,21 @@ The PR template asks for a summary, the reason and the test plan. Fill it in.
 
 Adding endpoints, fields, enum values and optional parameters is fine. Removing or renaming anything, or making an optional field required, is not: mark it `deprecated` in the spec, keep it working for at least 6 months, and remove it only in v2.
 
-## Versioning
+## Versioning and publishing
 
-Semantic versioning, automated by Release Please. Write commit messages as conventional commits: `feat:` (new endpoint or field, minor version), `fix:` (patch), `feat!:` or `BREAKING CHANGE:` (major, v2 only), `refactor:`, `test:`, `docs:`, `chore:`. Release Please opens a release PR with the version bump and changelog; merging it tags the release and publishes to npm. Never edit the version or `CHANGELOG.md` by hand; the version in the code is filled in from `package.json` at build time.
+Semantic versioning, automated by Release Please. Write commit messages and PR titles as conventional commits: `feat:` (new endpoint or field, minor version), `fix:` (patch), `feat!:` or `BREAKING CHANGE:` (major, v2 only), `refactor:`, `test:`, `docs:`, `chore:`. Never edit the version or `CHANGELOG.md` by hand; the version in the code is filled in from `package.json` at build time.
 
-Publishing uses npm Trusted Publishing (no npm token stored anywhere). Provenance (proof a version was built from this repo by `release.yml`) needs a public repo; turn it on with `"provenance": true` in `publishConfig` when this repo goes public. Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag; plain versions under `latest`. The first release is pinned to `0.1.0-beta.1` by `release-as` in `release-please-config.json`: remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
+Releasing is three steps, and only the last one ships anything:
 
-Before anything is published, the release runs the whole CI suite again on the release commit (every Node version, contract tests, spec checks) and then `npm run smoke:pack`: the exact package file is installed into an empty project and used through ESM, CommonJS and TypeScript. If any of it fails, nothing is published. Run `npm run smoke:pack` locally after `npm run build`.
+1. **Release PR (automatic).** On every push to `main`, Release Please updates a PR titled `chore(main): release ...` with the next version and the changelog.
+2. **Tag (when you merge that PR).** Merging it tags the version (`v0.1.0-beta.1`) and creates a GitHub release. Nothing is published yet.
+3. **Publish (manual, dudox only).** Actions tab > **Publish to npm** > Run workflow (leave the tag empty for the latest release). It checks the tag is on `main`, matches `package.json` and isn't on npm yet; runs the whole CI suite on that exact tag; builds; runs `npm run smoke:pack` (the exact package file installed in an empty project and used through ESM, CommonJS and TypeScript); then publishes. Any failure means nothing is published.
 
-Switches: repo variables `RELEASES_ENABLED` (Release Please opens release PRs) and `NPM_PUBLISH_ENABLED` (merging one publishes). Only owners of the `ketapay` npm org can change who may publish.
+Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag (`npm i @ketapay/node@next`); plain versions under `latest`. The first release is pinned to `0.1.0-beta.1` by `release-as` in `release-please-config.json`: remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
+
+Auth: `NPM_TOKEN` from Infisical (`ketapay-node-e6-wk`, prod) when set, otherwise npm Trusted Publishing. Check the token without publishing with the **Check release secrets** workflow. Provenance needs a public repo; turn it on with `"provenance": true` in `publishConfig` when this repo goes public.
+
+Switches (repo variables): `RELEASES_ENABLED` (Release Please) and `NPM_PUBLISH_ENABLED` (the publish workflow refuses to run without it).
 
 ## Style
 

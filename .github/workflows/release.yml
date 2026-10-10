@@ -1,17 +1,9 @@
-# Release Please opens a release PR from conventional commits (feat:, fix:, ...). Merging it tags a
-# version, writes the changelog and publishes to npm.
+# Release Please keeps a release PR up to date from conventional commits (feat:, fix:, ...): version
+# bump and changelog. Merging that PR tags the version (v0.1.0-beta.1) and creates a GitHub release.
+# Nothing is published here: publishing to npm is a separate, manual step ("Publish to npm" workflow),
+# which only dudox can run.
 #
-# Publishing uses npm Trusted Publishing: GitHub proves to npm which repo and workflow is publishing,
-# so no long-lived npm token exists. Provenance is off while this repo is private (npm only issues it
-# for public repos): when the repo goes public, add `"provenance": true` to publishConfig. Pre-release versions (0.1.0-beta.1) go to the `next` dist-tag,
-# so `npm i @ketapay/node` keeps installing the last stable version.
-#
-# Switches (repo Settings > Secrets and variables > Actions > Variables):
-#   RELEASES_ENABLED=true      Release Please runs on every push to main
-#   NPM_PUBLISH_ENABLED=true   merging a release PR publishes to npm
-# NPM_TOKEN comes from Infisical (project ketapay-node-e6-wk, env prod). When it is set, the job publishes
-# with it; when it is absent, it uses Trusted Publishing. Check it without publishing with the
-# "Check release secrets" workflow.
+# Switch: repo variable RELEASES_ENABLED=true.
 name: Release
 
 on:
@@ -22,7 +14,6 @@ permissions:
   contents: write
   pull-requests: write
 
-# Never two releases at once.
 concurrency:
   group: release
   cancel-in-progress: false
@@ -31,60 +22,8 @@ jobs:
   release-please:
     if: vars.RELEASES_ENABLED == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
     steps:
       - uses: googleapis/release-please-action@v5
-        id: release
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-
-  # The full CI suite (every Node version, contract tests, spec checks, smoke test of the packed
-  # package) runs again on the exact release commit. Nothing publishes unless all of it passes.
-  checks:
-    needs: release-please
-    if: needs.release-please.outputs.release_created == 'true'
-    uses: ./.github/workflows/ci.yml
-
-  publish:
-    needs: [release-please, checks]
-    if: needs.release-please.outputs.release_created == 'true' && vars.NPM_PUBLISH_ENABLED == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write # Trusted Publishing
-    steps:
-      - name: Fetch secrets from Infisical
-        uses: Infisical/secrets-action@v1.0.18
-        with:
-          method: 'oidc'
-          oidc-audience: 'https://infisical.com'
-          identity-id: 'ef5c6cbd-0f7e-49a9-a6b7-8d115c2abbd2'
-          project-slug: 'ketapay-node-e6-wk'
-          env-slug: 'prod'
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 22
-          cache: npm
-      - name: npm with Trusted Publishing support
-        run: npm install -g npm@11.6.2
-      - run: npm ci
-      - run: npm run build
-      - name: Smoke test the exact package being published
-        run: npm run smoke:pack
-      - name: Pick the dist-tag
-        id: tag
-        run: |
-          version=$(node -p "require('./package.json').version")
-          if [[ "$version" == *-* ]]; then echo "tag=next" >> "$GITHUB_OUTPUT"; else echo "tag=latest" >> "$GITHUB_OUTPUT"; fi
-          echo "Publishing $version"
-      - name: Publish (Trusted Publishing)
-        if: env.NPM_TOKEN == ''
-        run: npm publish --tag ${{ steps.tag.outputs.tag }}
-      - name: Publish (bootstrap token, first release only)
-        if: env.NPM_TOKEN != ''
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-          npm publish --tag ${{ steps.tag.outputs.tag }}
