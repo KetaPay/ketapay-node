@@ -9,10 +9,9 @@
 # Switches (repo Settings > Secrets and variables > Actions > Variables):
 #   RELEASES_ENABLED=true      Release Please runs on every push to main
 #   NPM_PUBLISH_ENABLED=true   merging a release PR publishes to npm
-# One-time bootstrap: if npm needs the package to exist before Trusted Publishing can be linked, add a
-# 7-day granular token (publish, @ketapay only) as the NPM_TOKEN GitHub secret on THIS repo for the first
-# publish, then delete it. It deliberately does not live in Infisical: the shared pipeline identity would
-# expose it to every repo.
+# NPM_TOKEN comes from Infisical (project ketapay-node-e6-wk, env prod). When it is set, the job publishes
+# with it; when it is absent, it uses Trusted Publishing. Check it without publishing with the
+# "Check release secrets" workflow.
 name: Release
 
 on:
@@ -43,9 +42,15 @@ jobs:
     permissions:
       contents: read
       id-token: write # Trusted Publishing
-    env:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
+      - name: Fetch secrets from Infisical
+        uses: Infisical/secrets-action@v1.0.18
+        with:
+          method: 'oidc'
+          oidc-audience: 'https://infisical.com'
+          identity-id: 'ef5c6cbd-0f7e-49a9-a6b7-8d115c2abbd2'
+          project-slug: 'ketapay-node-e6-wk'
+          env-slug: 'prod'
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
