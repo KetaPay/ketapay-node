@@ -2,8 +2,7 @@
   "name": "@ketapay/node",
   "version": "0.0.0",
   "description": "Official Node.js library for the KetaPay escrow API",
-  "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "keywords": [
     "ketapay",
     "escrow",
@@ -12,6 +11,14 @@
     "api",
     "sdk"
   ],
+  "homepage": "https://github.com/KetaPay/ketapay-node#readme",
+  "bugs": {
+    "url": "https://github.com/KetaPay/ketapay-node/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KetaPay/ketapay-node.git"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.cjs",
@@ -30,10 +37,16 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md"
   ],
   "engines": {
     "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "generate": "openapi-typescript spec/v1.yaml -o src/generated/openapi.ts --default-non-nullable false && prettier --write src/generated/openapi.ts",
