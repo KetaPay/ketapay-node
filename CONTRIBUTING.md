@@ -86,7 +86,20 @@ New scenario: add the row to the catalogue in the documentation repo first, `npm
 
 ## End-to-end tests
 
-`test/e2e/` runs the real SDK against the staging API with sandbox keys (`npm run test:e2e` with `KETAPAY_E2E_BASE_URL` and `KETAPAY_E2E_SECRET_KEY` set; see `test/e2e/setup.ts` for the optional ones). The **E2E** workflow runs nightly and by hand, reading the settings from Infisical (`ketapay-node-e6-wk`, staging); until they exist it reports "not configured" and passes. **Publish to npm** runs it on the release tag, and refuses a stable (non-beta) release unless it ran and passed.
+The real SDK against the staging API with sandbox keys, laid out like `src/resources/`:
+
+```
+test/e2e/
+├── support/     env (settings), client, fixtures (fresh people and sessions), flows (funded escrow,
+│                customer tokens, events), wait (eventually: polls for effects that land a moment later)
+├── checkout/    customers/    escrows/    disputes/    payouts/    webhooks/    platform/
+```
+
+- One file per behaviour inside its domain folder, each test tagged with its `E2E-xxx` catalogue ID.
+- Every test builds its own data with fresh people from `fixtures`, so tests never depend on each other. Everything created is stamped with the run id (`metadata.e2e_run`) so staging can be cleaned up by run.
+- Wait for asynchronous effects (events, payouts, refunds) with `eventually()`, never with a fixed sleep.
+- Settings: `KETAPAY_E2E_BASE_URL` and `KETAPAY_E2E_SECRET_KEY`, plus optional ones listed in `support/env.ts`. Run locally with `npm run test:e2e`; it uses `vitest.e2e.config.ts` (60-second timeouts, one retry, files one at a time).
+- The **E2E** workflow runs on every merge to `main`, nightly and by hand, reading the settings from Infisical (`ketapay-node-e6-wk`, staging); until they exist it reports "not configured" and passes. **Publish to npm** runs it on the release tag and refuses a stable (non-beta) release unless it ran and passed.
 
 ## Supported runtimes
 

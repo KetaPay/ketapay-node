@@ -1,5 +1,6 @@
 # End-to-end tests: the real SDK against the KetaPay staging API with sandbox keys. Every scenario is
-# tagged with its E2E-xxx id from the shared SDK test catalogue.
+# tagged with its E2E-xxx id from the shared SDK test catalogue. Runs on every merge to main, nightly,
+# by hand, and inside Publish to npm.
 #
 # Settings come from Infisical (project ketapay-node-e6-wk, environment staging):
 #   KETAPAY_E2E_BASE_URL, KETAPAY_E2E_SECRET_KEY (required)
@@ -9,6 +10,8 @@
 name: E2E
 
 on:
+  push:
+    branches: [main] # every merge: a breaking change shows up in minutes, not the next morning
   workflow_dispatch:
   schedule:
     - cron: '0 2 * * *' # nightly, 03:00 Lagos
@@ -68,7 +71,9 @@ jobs:
         run: npm ci
       - name: E2E tests
         if: steps.configured.outputs.yes == 'true'
-        run: npx vitest run test/e2e --reporter=default --reporter=github-actions --reporter=json --outputFile.json=reports/e2e.json
+        env:
+          KETAPAY_E2E_RUN_ID: e2e-gh-${{ github.run_id }} # stamped on all test data, for cleanup
+        run: npm run test:e2e -- --reporter=default --reporter=github-actions --reporter=json --outputFile.json=reports/e2e.json
       - name: Test report
         if: always() && steps.configured.outputs.yes == 'true'
         run: npm run --silent test:report >> "$GITHUB_STEP_SUMMARY"

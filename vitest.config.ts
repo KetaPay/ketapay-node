@@ -7,13 +7,8 @@ export default defineConfig({
   define: { __SDK_VERSION__: JSON.stringify(version) },
   test: {
     include: ['test/**/*.test.ts'],
-    // Contract tests need the Prism mock; `npm run test:contract` starts it and sets KETAPAY_MOCK_URL.
-    // E2E tests need the staging API; they run when KETAPAY_E2E_BASE_URL is set (npm run test:e2e).
-    exclude: [
-      ...configDefaults.exclude,
-      ...(process.env.KETAPAY_MOCK_URL ? [] : ['test/contract/**']),
-      ...(process.env.KETAPAY_E2E_BASE_URL ? [] : ['test/e2e/**']),
-    ],
+    // Contract tests need the Prism mock (npm run test:contract); E2E has its own config (vitest.e2e.config.ts).
+    exclude: [...configDefaults.exclude, ...(process.env.KETAPAY_MOCK_URL ? [] : ['test/contract/**']), 'test/e2e/**'],
     coverage: {
       provider: 'v8',
       include: ['src/**'],
