@@ -58,7 +58,8 @@ jobs:
           if ! git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then echo "::error::No tag $tag."; exit 1; fi
           if ! git merge-base --is-ancestor "$tag" origin/main; then echo "::error::$tag is not on main."; exit 1; fi
           version=$(git show "$tag:package.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).version))')
-          if [ "v$version" != "$tag" ]; then echo "::error::$tag does not match package.json version $version."; exit 1; fi
+          # Tags are v<version>; node-v<version> is the older Release Please format.
+          if [ "$tag" != "v$version" ] && [ "$tag" != "node-v$version" ]; then echo "::error::$tag does not match package.json version $version."; exit 1; fi
           if npm view "@ketapay/node@$version" version >/dev/null 2>&1; then echo "::error::@ketapay/node@$version is already on npm."; exit 1; fi
           if [[ "$version" == *-* ]]; then dist_tag=next; else dist_tag=latest; fi
           { echo "tag=$tag"; echo "version=$version"; echo "dist_tag=$dist_tag"; } >> "$GITHUB_OUTPUT"

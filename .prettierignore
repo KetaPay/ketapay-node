@@ -1,3 +1,4 @@
 dist/
 spec/
 package-lock.json
+CHANGELOG.md
