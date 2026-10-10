@@ -89,7 +89,7 @@ jobs:
         run: npm run --silent test:report >> "$GITHUB_STEP_SUMMARY"
       - name: Upload coverage report
         if: always() && matrix.node == 22
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report
           path: coverage/
