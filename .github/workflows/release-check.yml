@@ -4,8 +4,6 @@ name: Check release secrets
 
 on:
   workflow_dispatch:
-  push:
-    branches: [chore/npm-publishing] # temporary: first run on the PR branch; remove before merging
 
 jobs:
   check:
