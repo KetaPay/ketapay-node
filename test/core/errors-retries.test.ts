@@ -14,13 +14,21 @@ import { apiError, client, mockFetch } from '../helpers.js'
 
 describe('errors', () => {
   it.each([
-    [apiError(400, 'invalid_request_error', 'parameter_invalid', 'buyer.phone'), InvalidRequestError],
-    [apiError(401, 'authentication_error', 'api_key_invalid'), AuthenticationError],
-    [apiError(403, 'permission_error', 'customer_not_allowed'), PermissionError],
-    [apiError(404, 'invalid_request_error', 'resource_not_found', 'id'), NotFoundError],
-    [apiError(409, 'invalid_request_error', 'dispute_open'), ConflictError],
-    [apiError(409, 'idempotency_error', 'idempotency_key_reused'), IdempotencyError],
-  ])('maps HTTP %#', async (reply, ErrorClass) => {
+    [
+      '400 → InvalidRequestError',
+      apiError(400, 'invalid_request_error', 'parameter_invalid', 'buyer.phone'),
+      InvalidRequestError,
+    ],
+    ['401 → AuthenticationError', apiError(401, 'authentication_error', 'api_key_invalid'), AuthenticationError],
+    ['403 → PermissionError', apiError(403, 'permission_error', 'customer_not_allowed'), PermissionError],
+    ['404 → NotFoundError', apiError(404, 'invalid_request_error', 'resource_not_found', 'id'), NotFoundError],
+    ['409 dispute_open → ConflictError', apiError(409, 'invalid_request_error', 'dispute_open'), ConflictError],
+    [
+      '409 idempotency_key_reused → IdempotencyError',
+      apiError(409, 'idempotency_error', 'idempotency_key_reused'),
+      IdempotencyError,
+    ],
+  ] as const)('maps %s', async (_name, reply, ErrorClass) => {
     const { fetch } = mockFetch(reply)
     const err = await client(fetch)
       .escrows.retrieve('e1')

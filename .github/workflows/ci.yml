@@ -7,9 +7,26 @@ on:
   workflow_call: # the release runs this whole suite before publishing
 
 jobs:
+  pr-title:
+    name: PR title is a conventional commit
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern='^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert)(\([a-z0-9._-]+\))?!?: .+'
+          if [[ ! "$TITLE" =~ $pattern ]]; then
+            echo "::error::PR title must be a conventional commit, like 'feat: add refunds' or 'fix(webhooks): ...'. Release notes are built from it."
+            exit 1
+          fi
+
   check:
+    name: Checks (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node: [22, 24]
     steps:
@@ -18,20 +35,42 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      - run: npm ci
+      - name: Install
+        run: npm ci
+      - name: No known vulnerabilities in what we ship
+        run: npm audit --omit=dev --audit-level=high
       - name: Spec snapshot was not edited by hand
         if: matrix.node == 22
         run: npm run check:spec
       - name: Generated types match the spec
         if: matrix.node == 22
         run: npm run check:drift
-      - run: npm run format:check
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm test
-      - name: SDK requests match the spec (Prism contract tests)
+      - name: Formatting
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Types
+        run: npm run typecheck
+      - name: Unit tests with coverage
         if: matrix.node == 22
-        run: npm run test:contract
-      - run: npm run build
-      - name: The packed package installs and works (ESM, CommonJS, TypeScript)
+        run: npm run test:ci
+      - name: Unit tests
+        if: matrix.node != 22
+        run: npm test
+      - name: Contract tests (SDK requests against the spec)
+        if: matrix.node == 22
+        run: npm run test:contract:ci
+      - name: Build
+        run: npm run build
+      - name: Packed package installs and works (ESM, CommonJS, TypeScript)
         run: npm run smoke:pack
+      - name: Test report
+        if: always() && matrix.node == 22
+        run: npm run --silent test:report >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload coverage report
+        if: always() && matrix.node == 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
