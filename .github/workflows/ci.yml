@@ -4,26 +4,70 @@ on:
   push:
     branches: [main]
   pull_request:
-  workflow_call: # the release runs this whole suite before publishing
+  workflow_call: # the publish workflow runs this whole suite on the exact tag before publishing
+    inputs:
+      ref:
+        description: Git ref to check (defaults to the triggering commit)
+        type: string
+        required: false
 
+# Each job is its own check on the PR, so you can see at a glance which kind of test failed.
 jobs:
   pr-title:
-    name: PR title is a conventional commit
+    name: PR title
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - name: Check the title
+      - name: Conventional commit title (release notes are built from it)
         env:
           TITLE: ${{ github.event.pull_request.title }}
         run: |
           pattern='^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert)(\([a-z0-9._-]+\))?!?: .+'
           if [[ ! "$TITLE" =~ $pattern ]]; then
-            echo "::error::PR title must be a conventional commit, like 'feat: add refunds' or 'fix(webhooks): ...'. Release notes are built from it."
+            echo "::error::PR title must be a conventional commit, like 'feat: add refunds' or 'fix(webhooks): ...'."
             exit 1
           fi
 
-  check:
-    name: Checks (Node ${{ matrix.node }})
+  spec:
+    name: Spec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Spec snapshot was not edited by hand
+        run: npm run check:spec
+      - name: Generated types match the spec
+        run: npm run check:drift
+
+  quality:
+    name: Format, lint, types, audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Formatting
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Types
+        run: npm run typecheck
+      - name: No known vulnerabilities in what we ship
+        run: npm audit --omit=dev --audit-level=high
+
+  unit:
+    name: Unit tests (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -31,41 +75,17 @@ jobs:
         node: [22, 24]
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           cache: npm
-      - name: Install
-        run: npm ci
-      - name: No known vulnerabilities in what we ship
-        run: npm audit --omit=dev --audit-level=high
-      - name: Spec snapshot was not edited by hand
-        if: matrix.node == 22
-        run: npm run check:spec
-      - name: Generated types match the spec
-        if: matrix.node == 22
-        run: npm run check:drift
-      - name: Formatting
-        run: npm run format:check
-      - name: Lint
-        run: npm run lint
-      - name: Types
-        run: npm run typecheck
+      - run: npm ci
       - name: Unit tests with coverage
-        if: matrix.node == 22
         run: npm run test:ci
-      - name: Unit tests
-        if: matrix.node != 22
-        run: npm test
-      - name: Contract tests (SDK requests against the spec)
-        if: matrix.node == 22
-        run: npm run test:contract:ci
-      - name: Build
-        run: npm run build
-      - name: Packed package installs and works (ESM, CommonJS, TypeScript)
-        run: npm run smoke:pack
       - name: Test report
-        if: always() && matrix.node == 22
+        if: always()
         run: npm run --silent test:report >> "$GITHUB_STEP_SUMMARY"
       - name: Upload coverage report
         if: always() && matrix.node == 22
@@ -74,3 +94,42 @@ jobs:
           name: coverage-report
           path: coverage/
           retention-days: 14
+
+  contract:
+    name: Contract tests (SDK vs spec)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: SDK requests against a mock built from the spec
+        run: npm run test:contract:ci
+      - name: Test report
+        if: always()
+        run: npm run --silent test:report >> "$GITHUB_STEP_SUMMARY"
+
+  package:
+    name: Build and package smoke test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Packed package installs and works (ESM, CommonJS, TypeScript)
+        run: npm run smoke:pack
