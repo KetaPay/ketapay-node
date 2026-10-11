@@ -121,10 +121,14 @@ Releasing is three steps, and only the last one ships anything:
 
 Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag (`npm i @ketapay/node@next`); plain versions under `latest`. The next release is pinned to `0.1.0-beta.2` by `release-as` in `release-please-config.json` (`0.1.0-beta.1` was tagged but never published): remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
 
-Auth: `NPM_TOKEN` from Infisical (`ketapay-sdks`, prod) when set, otherwise npm Trusted Publishing. Check the token without publishing with the **Check release secrets** workflow. Provenance needs a public repo; turn it on with `"provenance": true` in `publishConfig` when this repo goes public.
+Auth: `NPM_TOKEN` from Infisical (`ketapay-sdks`, prod) when set, otherwise npm Trusted Publishing. Check the token without publishing with the **Check release secrets** workflow. Every version is published with npm provenance (`publishConfig.provenance`), which links it to the workflow run and commit that built it. The publish job runs in the GitHub environment `publish`, so it waits for dudox's approval.
 
 Switches (repo variables): `RELEASES_ENABLED` (Release Please) and `NPM_PUBLISH_ENABLED` (the publish workflow refuses to run without it).
 
 ## Style
 
 Prettier (`npm run format`): 120 columns, no semicolons, single quotes. No runtime dependencies.
+
+## Secrets and security
+
+No secret ever goes in this repo: keys and tokens come from Infisical at run time. Two scanners enforce it. GitHub secret scanning with push protection blocks a push containing a known token format. The **Secrets** CI check runs gitleaks over the whole history with KetaPay's own patterns (`.gitleaks.toml`: `sk_live_` and `sk_test_` keys, customer tokens, `whsec_` secrets, Supabase URLs). A documented sample value from the spec goes in that file's allowlist, never a real one. Vulnerabilities are reported privately (see SECURITY.md).
