@@ -8,7 +8,8 @@
 #    (0.1.0-beta.1) under the `next` dist-tag, others under `latest`.
 #
 # Auth: NPM_TOKEN from Infisical (ketapay-sdks, prod) when set, otherwise npm Trusted Publishing.
-# Provenance is off while the repo is private.
+# Provenance is on: npm links each version to the exact workflow run and commit that built it.
+# The publish job runs in the `publish` environment, which needs dudox's approval before it starts.
 name: Publish to npm
 
 on:
@@ -86,6 +87,7 @@ jobs:
 
   publish:
     name: Publish
+    environment: publish # requires dudox's approval (repo settings > Environments)
     needs: [prepare, checks, e2e]
     runs-on: ubuntu-latest
     permissions:
