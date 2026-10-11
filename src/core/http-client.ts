@@ -38,7 +38,7 @@ export class HttpClient {
     }
     this.apiKey = config.apiKey
     this.livemode = config.apiKey.startsWith('sk_live_')
-    this.baseUrl = (config.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, '')
+    this.baseUrl = trimTrailingSlashes(config.baseUrl ?? DEFAULT_BASE_URL)
     if (!isSafeBaseUrl(this.baseUrl)) {
       throw new TypeError('KetaPay: baseUrl must use https (plain http is only allowed for localhost)')
     }
@@ -119,6 +119,13 @@ export class HttpClient {
       throw errorFromResponse(response.status, data, requestId)
     }
   }
+}
+
+/** Without a regex: `/\/+$/` is quadratic on a string of many slashes (CodeQL js/polynomial-redos). */
+function trimTrailingSlashes(url: string): string {
+  let end = url.length
+  while (end > 0 && url[end - 1] === '/') end--
+  return url.slice(0, end)
 }
 
 function isSafeBaseUrl(url: string): boolean {

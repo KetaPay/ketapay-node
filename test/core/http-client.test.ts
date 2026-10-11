@@ -62,9 +62,12 @@ describe('urls', () => {
   })
 
   it('[REQ-005] honours a custom base URL', async () => {
-    const { fetch, calls } = mockFetch({ body: {} })
+    const { fetch, calls } = mockFetch({ body: {} }, { body: {} })
     await client(fetch, { baseUrl: 'http://localhost:4010/' }).escrows.retrieve('e1')
     expect(calls[0]!.url).toBe('http://localhost:4010/escrows/e1')
+    // Many trailing slashes are trimmed in linear time.
+    await client(fetch, { baseUrl: 'http://localhost:4010' + '/'.repeat(100_000) }).escrows.retrieve('e2')
+    expect(calls[1]!.url).toBe('http://localhost:4010/escrows/e2')
   })
 })
 
