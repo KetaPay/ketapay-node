@@ -17,6 +17,11 @@ export interface KetaPayConfig {
   logLevel?: LogLevel
   /** Where logs go. Defaults to `console`. */
   logger?: Logger
+  /**
+   * For libraries built on this one: appended to the User-Agent (`my-plugin/1.2.0`) so KetaPay can tell
+   * integrations apart. Letters, digits, dots and dashes only.
+   */
+  appInfo?: { name: string; version: string }
 }
 
 export interface RequestOptions {

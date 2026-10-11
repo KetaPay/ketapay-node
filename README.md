@@ -152,6 +152,8 @@ await ketapay.testHelpers.checkoutSessions.pay(session.id)
 await ketapay.testHelpers.escrows.simulate(escrowId, { action: 'deliver', milestone_id: milestoneId })
 ```
 
+Building a library on top of this one? Identify it with `appInfo: { name: 'my-plugin', version: '1.2.0' }`: it's added to the User-Agent, so KetaPay support can see which integration made a call.
+
 ## Development
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
