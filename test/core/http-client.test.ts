@@ -28,6 +28,20 @@ describe('headers', () => {
     expect(VERSION).not.toBe('0.0.0-dev')
   })
 
+  it('[REQ-003] appends appInfo to the user agent, and refuses one that could break the header', async () => {
+    const { fetch, calls } = mockFetch({ body: {} })
+    await client(fetch, { appInfo: { name: 'my-plugin', version: '1.2.0' } }).escrows.retrieve('e1')
+    expect(calls[0]!.headers['User-Agent']).toBe(
+      `ketapay-node/${VERSION} node/${process.versions.node} my-plugin/1.2.0`,
+    )
+    for (const appInfo of [
+      { name: 'evil\r\nX-Injected: 1', version: '1' },
+      { name: 'ok', version: '1 2' },
+    ]) {
+      expect(() => client(fetch, { appInfo })).toThrow(/appInfo/)
+    }
+  })
+
   it('[REQ-001] [REQ-002] uses the idempotency key you pass, and none on GET', async () => {
     const { fetch, calls } = mockFetch({ body: {} }, { body: {} })
     const k = client(fetch)

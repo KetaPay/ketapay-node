@@ -27,6 +27,7 @@ export class HttpClient {
   private readonly fetchImpl: typeof fetch
   private readonly defaultHeaders: Record<string, string>
   private readonly log: Logger
+  private readonly userAgent: string
 
   constructor(config: KetaPayConfig) {
     if (!config?.apiKey) throw new TypeError('KetaPay: apiKey is required')
@@ -47,6 +48,7 @@ export class HttpClient {
     this.fetchImpl = config.fetch ?? globalThis.fetch?.bind(globalThis)
     this.defaultHeaders = config.defaultHeaders ?? {}
     this.log = createLogger(config.logLevel, config.logger)
+    this.userAgent = userAgent(config.appInfo)
     if (!this.fetchImpl) throw new TypeError('KetaPay: no global fetch found. Use Node 18 or later, or pass `fetch`.')
   }
 
@@ -62,7 +64,7 @@ export class HttpClient {
       ...options?.headers,
       Authorization: `Bearer ${this.apiKey}`,
       Accept: 'application/json',
-      'User-Agent': userAgent(),
+      'User-Agent': this.userAgent,
     }
     if (method === 'POST') headers['Idempotency-Key'] = options?.idempotencyKey ?? (await randomId())
     if (options?.customerToken) headers['KetaPay-Customer-Token'] = options.customerToken
@@ -137,10 +139,15 @@ function isSafeBaseUrl(url: string): boolean {
   }
 }
 
-function userAgent(): string {
+function userAgent(appInfo: KetaPayConfig['appInfo']): string {
   const runtime =
     typeof process !== 'undefined' && process.versions?.node ? `node/${process.versions.node}` : 'runtime/unknown'
-  return `ketapay-node/${VERSION} ${runtime}`
+  if (!appInfo) return `ketapay-node/${VERSION} ${runtime}`
+  // Token characters only, so a value can never break the header or inject another one.
+  if (!/^[A-Za-z0-9._@/-]{1,64}$/.test(appInfo.name ?? '') || !/^[A-Za-z0-9.+_-]{1,32}$/.test(appInfo.version ?? '')) {
+    throw new TypeError('KetaPay: appInfo must be { name, version } using letters, digits, dots and dashes')
+  }
+  return `ketapay-node/${VERSION} ${runtime} ${appInfo.name}/${appInfo.version}`
 }
 
 function aborted(): RequestAbortedError {
