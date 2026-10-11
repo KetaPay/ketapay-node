@@ -2,7 +2,7 @@
 # tagged with its E2E-xxx id from the shared SDK test catalogue. Runs on every merge to main, nightly,
 # by hand, and inside Publish to npm.
 #
-# Settings come from Infisical (project ketapay-node-e6-wk, environment staging):
+# Settings come from Infisical (project ketapay-sdks, shared by every KetaPay SDK, environment staging):
 #   KETAPAY_E2E_BASE_URL, KETAPAY_E2E_SECRET_KEY (required)
 #   KETAPAY_E2E_OTHER_SECRET_KEY, KETAPAY_E2E_LIVE_SECRET_KEY, KETAPAY_E2E_WEBHOOK_URL (optional, enable more tests)
 # Until the required ones exist, the job reports "not configured" and passes, unless `required` is set
@@ -42,7 +42,7 @@ jobs:
           method: 'oidc'
           oidc-audience: 'https://infisical.com'
           identity-id: 'ef5c6cbd-0f7e-49a9-a6b7-8d115c2abbd2'
-          project-slug: 'ketapay-node-e6-wk'
+          project-slug: 'ketapay-sdks-pz5w' # one Infisical project for every KetaPay SDK
           env-slug: 'staging'
       - name: Is E2E configured?
         id: configured

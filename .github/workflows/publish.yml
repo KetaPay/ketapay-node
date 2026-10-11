@@ -7,7 +7,7 @@
 # 3. Builds, smoke-tests the packed package, and publishes it: versions with a pre-release suffix
 #    (0.1.0-beta.1) under the `next` dist-tag, others under `latest`.
 #
-# Auth: NPM_TOKEN from Infisical (ketapay-node-e6-wk, prod) when set, otherwise npm Trusted Publishing.
+# Auth: NPM_TOKEN from Infisical (ketapay-sdks, prod) when set, otherwise npm Trusted Publishing.
 # Provenance is off while the repo is private.
 name: Publish to npm
 
@@ -98,7 +98,7 @@ jobs:
           method: 'oidc'
           oidc-audience: 'https://infisical.com'
           identity-id: 'ef5c6cbd-0f7e-49a9-a6b7-8d115c2abbd2'
-          project-slug: 'ketapay-node-e6-wk'
+          project-slug: 'ketapay-sdks-pz5w' # one Infisical project for every KetaPay SDK
           env-slug: 'prod'
       - uses: actions/checkout@v7
         with:
