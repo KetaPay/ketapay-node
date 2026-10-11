@@ -1,4 +1,4 @@
-// E2E settings. CI reads them from Infisical (project ketapay-node, environment staging).
+// E2E settings. CI reads them from Infisical (project ketapay-sdks, shared by every KetaPay SDK, environment staging).
 //
 //   KETAPAY_E2E_BASE_URL          staging API base URL, e.g. https://<staging>/v1   (required)
 //   KETAPAY_E2E_SECRET_KEY        sk_test_ key of the e2e organisation                (required)

@@ -18,7 +18,7 @@ jobs:
           method: 'oidc'
           oidc-audience: 'https://infisical.com'
           identity-id: 'ef5c6cbd-0f7e-49a9-a6b7-8d115c2abbd2'
-          project-slug: 'ketapay-node-e6-wk'
+          project-slug: 'ketapay-sdks-pz5w' # one Infisical project for every KetaPay SDK
           env-slug: 'prod'
       - uses: actions/setup-node@v7
         with:

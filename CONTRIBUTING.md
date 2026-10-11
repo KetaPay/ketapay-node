@@ -99,7 +99,7 @@ test/e2e/
 - Every test builds its own data with fresh people from `fixtures`, so tests never depend on each other. Everything created is stamped with the run id (`metadata.e2e_run`) so staging can be cleaned up by run.
 - Wait for asynchronous effects (events, payouts, refunds) with `eventually()`, never with a fixed sleep.
 - Settings: `KETAPAY_E2E_BASE_URL` and `KETAPAY_E2E_SECRET_KEY`, plus optional ones listed in `support/env.ts`. Run locally with `npm run test:e2e`; it uses `vitest.e2e.config.ts` (60-second timeouts, one retry, files one at a time).
-- The **E2E** workflow runs on every merge to `main`, nightly and by hand, reading the settings from Infisical (`ketapay-node-e6-wk`, staging); until they exist it reports "not configured" and passes. **Publish to npm** runs it on the release tag and refuses a stable (non-beta) release unless it ran and passed.
+- The **E2E** workflow runs on every merge to `main`, nightly and by hand, reading the settings from Infisical (`ketapay-sdks`, staging: one project shared by every KetaPay SDK); until they exist it reports "not configured" and passes. **Publish to npm** runs it on the release tag and refuses a stable (non-beta) release unless it ran and passed.
 
 ## Supported runtimes
 
@@ -121,7 +121,7 @@ Releasing is three steps, and only the last one ships anything:
 
 Versions with a pre-release suffix (`0.1.0-beta.1`) publish under the `next` dist-tag (`npm i @ketapay/node@next`); plain versions under `latest`. The next release is pinned to `0.1.0-beta.2` by `release-as` in `release-please-config.json` (`0.1.0-beta.1` was tagged but never published): remove that line after it ships. When the API is stable, drop `prerelease` and `versioning` from the same file to cut `0.1.0`.
 
-Auth: `NPM_TOKEN` from Infisical (`ketapay-node-e6-wk`, prod) when set, otherwise npm Trusted Publishing. Check the token without publishing with the **Check release secrets** workflow. Provenance needs a public repo; turn it on with `"provenance": true` in `publishConfig` when this repo goes public.
+Auth: `NPM_TOKEN` from Infisical (`ketapay-sdks`, prod) when set, otherwise npm Trusted Publishing. Check the token without publishing with the **Check release secrets** workflow. Provenance needs a public repo; turn it on with `"provenance": true` in `publishConfig` when this repo goes public.
 
 Switches (repo variables): `RELEASES_ENABLED` (Release Please) and `NPM_PUBLISH_ENABLED` (the publish workflow refuses to run without it).
 
