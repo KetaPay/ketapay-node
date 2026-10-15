@@ -651,7 +651,8 @@ export interface paths {
     put?: never
     /**
      * Create a webhook endpoint
-     * @description Registers an HTTPS URL to receive events. The response is the only time `secret` is
+     * @description Registers an HTTPS URL to receive events. Without `enabled_events` the endpoint receives
+     *     every event, including types added later. The response is the only time `secret` is
      *     shown; store it to verify signatures. Up to 10 endpoints per environment.
      */
     post: operations['createWebhookEndpoint']
@@ -2051,8 +2052,14 @@ export interface components {
     CreateWebhookEndpointRequest: {
       /** Format: uri */
       url: string
-      /** @description Event types to send, or `["*"]` for all, including types added later */
-      enabled_events: (components['schemas']['EventType'] | '*')[]
+      /**
+       * @description Event types to send, or `["*"]` for all, including types added later. Leave it out to
+       *     receive every event.
+       * @default [
+       *       "*"
+       *     ]
+       */
+      enabled_events?: (components['schemas']['EventType'] | '*')[]
       description?: string | null
       metadata?: components['schemas']['Metadata']
     }
