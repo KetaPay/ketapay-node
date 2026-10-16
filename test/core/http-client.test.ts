@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { KetaPay, RequestAbortedError, VERSION } from '../../src/index.js'
+import { KetaPay, RequestAbortedError, VERSION, type KetaPayOptions } from '../../src/index.js'
 import { client, hangingFetch, mockFetch } from '../helpers.js'
 
 describe('keys', () => {
@@ -12,6 +12,20 @@ describe('keys', () => {
     expect(() => new KetaPay('pk_test_x')).toThrow(/publishable/)
     expect(() => new KetaPay('abc')).toThrow(/sk_test_ or sk_live_/)
     expect(() => new KetaPay('')).toThrow(/apiKey is required/)
+  })
+
+  it('[AUTH-005] applies options given after the key, or in one config object, and refuses a key given twice', async () => {
+    const { fetch, calls } = mockFetch({ body: { object: 'list', data: [], has_more: false, next_cursor: null } })
+    const baseUrl = 'http://localhost:4010'
+    await new KetaPay('sk_test_123', { baseUrl, fetch }).events.list()
+    await new KetaPay({ apiKey: 'sk_test_123', baseUrl, fetch }).events.list()
+    expect(calls.map((c) => c.url)).toEqual([`${baseUrl}/events`, `${baseUrl}/events`])
+
+    const sent = { apiKey: 'sk_test_other', baseUrl } as unknown as KetaPayOptions
+    expect(() => new KetaPay('sk_test_123', sent)).toThrow(/key is given twice/)
+    const both = [{ apiKey: 'sk_test_123' }, { baseUrl }] as unknown as [string, undefined]
+    expect(() => new KetaPay(...both)).toThrow(/inside the config object/)
+    expect(calls).toHaveLength(2)
   })
 })
 

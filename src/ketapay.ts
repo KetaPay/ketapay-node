@@ -1,5 +1,5 @@
 import { HttpClient } from './core/http-client.js'
-import type { KetaPayConfig } from './core/options.js'
+import type { KetaPayConfig, KetaPayOptions } from './core/options.js'
 import { CheckoutSessions } from './resources/checkout/index.js'
 import { CustomerSessions } from './resources/customers/index.js'
 import { Chargebacks, Disputes } from './resources/disputes/index.js'
@@ -34,8 +34,14 @@ export class KetaPay {
   /** True for `sk_live_` keys. */
   readonly livemode: boolean
 
-  constructor(apiKeyOrConfig: string | KetaPayConfig) {
-    const config = typeof apiKeyOrConfig === 'string' ? { apiKey: apiKeyOrConfig } : apiKeyOrConfig
+  /**
+   * `new KetaPay(key, options)` or `new KetaPay({ apiKey, ...options })`. Options are never dropped:
+   * a key given in both places, or options after a config object, is refused.
+   */
+  constructor(apiKey: string, options?: KetaPayOptions)
+  constructor(config: KetaPayConfig)
+  constructor(apiKeyOrConfig: string | KetaPayConfig, options?: KetaPayOptions) {
+    const config = resolveConfig(apiKeyOrConfig, options)
     const http = new HttpClient(config)
     this.livemode = http.livemode
     this.checkoutSessions = new CheckoutSessions(http)
@@ -50,4 +56,17 @@ export class KetaPay {
     this.events = new Events(http)
     this.testHelpers = new TestHelpers(http)
   }
+}
+
+function resolveConfig(apiKeyOrConfig: string | KetaPayConfig, options: KetaPayOptions | undefined): KetaPayConfig {
+  if (typeof apiKeyOrConfig !== 'string') {
+    if (options !== undefined) {
+      throw new TypeError('KetaPay: pass options inside the config object, or use new KetaPay(key, options)')
+    }
+    return apiKeyOrConfig
+  }
+  if (options && 'apiKey' in options) {
+    throw new TypeError('KetaPay: the key is given twice; pass it as the first argument only')
+  }
+  return { ...options, apiKey: apiKeyOrConfig }
 }
