@@ -24,6 +24,9 @@ export interface KetaPayConfig {
   appInfo?: { name: string; version: string }
 }
 
+/** Everything in `KetaPayConfig` but the key, for `new KetaPay(key, options)`. */
+export type KetaPayOptions = Omit<KetaPayConfig, 'apiKey'>
+
 export interface RequestOptions {
   /** Sent as `Idempotency-Key` on POST. Generated for you when left out, and reused across retries. */
   idempotencyKey?: string
