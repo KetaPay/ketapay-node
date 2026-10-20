@@ -222,6 +222,8 @@ export interface paths {
     /**
      * Mark a milestone delivered
      * @description The seller says their part of this milestone is done, with the seller's customer token.
+     *     When you sell your own goods (the escrow's `seller` is your business), your key alone
+     *     delivers it; without a token on anyone else's escrow it is `customer_token_required`.
      *     Only the current milestone (the first one not yet released) can be delivered. Moves no
      *     money: the buyer then releases it, reports a problem, or (with `auto_release_hours`)
      *     lets the time run out. Sends `milestone.delivered`.
@@ -1273,6 +1275,7 @@ export interface components {
         /**
          * @description Specific reason. Known codes: `parameter_missing`, `parameter_invalid`,
          *     `contact_required`, `party_identity_conflict`, `parties_must_differ`, `milestones_total_mismatch`, `commission_exceeds_contract`,
+         *     `commission_not_allowed`,
          *     `release_settings_invalid`, `verification_required`, `checkout_session_not_open`,
          *     `escrow_already_flagged`, `escrow_state_invalid`, `milestone_not_current`,
          *     `milestone_not_delivered`, `dispute_open`, `escrow_under_review`,
@@ -1349,10 +1352,22 @@ export interface components {
           phone: components['schemas']['Phone']
         }
     /**
+     * @description The seller when you sell your own goods (a checkout session sent without `seller`): your
+     *     business, by the name your customers see (your checkout name, else your trading name, else
+     *     your legal name). Releases are paid into your KetaPay balance.
+     */
+    BusinessSeller: {
+      /** @enum {string} */
+      type: 'business'
+      /** @example Ade Gadgets */
+      name: string
+    }
+    /**
      * @description Your cut, taken from the seller's side of each release. Never charged on money refunded
      *     to the buyer. `rate_bps` is basis points (500 = 5%). `min_amount` and `max_amount` apply
      *     to the whole escrow; each milestone's release carries its share. Must be within the
-     *     maximum rate in your KetaPay agreement.
+     *     maximum rate in your KetaPay agreement. Not allowed when you sell your own goods (no
+     *     `seller`): `commission_not_allowed`.
      */
     CommissionInput: {
       /** @example 1000 */
@@ -1393,7 +1408,11 @@ export interface components {
       /** @description Stages released one at a time, in this order. Leave out for a single payment. */
       milestones?: components['schemas']['MilestoneInput'][]
       buyer: components['schemas']['PartyInput']
-      seller: components['schemas']['PartyInput']
+      /**
+       * @description Who gets paid. Leave it out when you sell your own goods: your business is the seller,
+       *     by its name, and each release is paid into your KetaPay balance.
+       */
+      seller?: components['schemas']['PartyInput']
       release?: components['schemas']['Release']
       /** @default null */
       commission?: components['schemas']['CommissionInput'] | null
@@ -1493,7 +1512,8 @@ export interface components {
       /** @description The plan. One entry for a single payment. */
       milestones: components['schemas']['MilestoneInput'][]
       buyer: components['schemas']['PartyInput']
-      seller: components['schemas']['PartyInput']
+      /** @description The seller as you sent them, or your business when you sent none */
+      seller: components['schemas']['PartyInput'] | components['schemas']['BusinessSeller']
       release: components['schemas']['Release']
       commission: components['schemas']['CommissionInput'] | null
       /**
@@ -1720,7 +1740,8 @@ export interface components {
       /** @description In order. One entry for a single payment. */
       milestones: components['schemas']['Milestone'][]
       buyer: components['schemas']['Party']
-      seller: components['schemas']['Party']
+      /** @description The seller, or your business when you sell your own goods */
+      seller: components['schemas']['Party'] | components['schemas']['BusinessSeller']
       release: components['schemas']['Release']
       /** Format: uuid */
       checkout_session_id: string

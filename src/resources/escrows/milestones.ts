@@ -6,12 +6,15 @@ import type { Escrow, MilestoneDeliverParams, MilestoneReleaseParams, ReleaseCod
 const path = (escrowId: string, milestoneId: string) => `/escrows/${seg(escrowId)}/milestones/${seg(milestoneId)}`
 
 export class Milestones extends Resource {
-  /** The seller marks the milestone delivered. Needs the seller's customer token. */
+  /**
+   * The seller marks the milestone delivered. Needs the seller's customer token, except on your
+   * own sale (the escrow's `seller` is your business), where your key alone delivers it.
+   */
   deliver(
     escrowId: string,
     milestoneId: string,
     params: MilestoneDeliverParams,
-    options: CustomerRequestOptions,
+    options?: RequestOptions,
   ): APIPromise<Escrow> {
     return this.http.request('POST', `${path(escrowId, milestoneId)}/deliver`, { body: params, options })
   }

@@ -19,8 +19,6 @@ describe('security', () => {
     const unused = () => {
       // @ts-expect-error a customer token is required to cancel an escrow
       void k.escrows.cancel('e1', undefined, {})
-      // @ts-expect-error a customer token is required to deliver a milestone
-      void k.escrows.milestones.deliver('e1', 'm1', {}, {})
       // @ts-expect-error a customer token is required to open a dispute
       void k.disputes.create('e1', { reason: 'damaged', description: 'Arrived cracked' })
       // @ts-expect-error a customer token is required to add a payout account
