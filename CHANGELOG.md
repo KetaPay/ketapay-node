@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-beta.3](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.2...v0.1.0-beta.3) (2026-10-22)
+
+
+### Features
+
+* checkout sessions without a seller, for a business selling its own goods ([#26](https://github.com/KetaPay/ketapay-node/issues/26)) ([740280d](https://github.com/KetaPay/ketapay-node/commit/740280d566a34f74cf8273e1b3a24a61a4fba064))
+
 ## [0.1.0-beta.2](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.1...v0.1.0-beta.2) (2026-10-21)
 
 
