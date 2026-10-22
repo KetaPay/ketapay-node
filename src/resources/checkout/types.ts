@@ -14,7 +14,8 @@ export type CheckoutSessionCreateParams = Omit<
   'buyer' | 'seller' | 'images' | 'attachments'
 > & {
   buyer: PartyInput
-  seller: PartyInput
+  /** Leave out when you sell your own goods: your business is the seller and is paid on release. */
+  seller?: PartyInput
   images?: ImageInput[]
   attachments?: AttachmentInput[]
 }

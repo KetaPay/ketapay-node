@@ -38,6 +38,17 @@ describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', ()
     expect(session.object).toBe('checkout_session')
   })
 
+  it('creates a checkout session for the business own goods and delivers it with the key alone', async () => {
+    const session = await k.checkoutSessions.create({
+      amount: 2_500_000,
+      title: 'Desk lamp',
+      description: 'Brass desk lamp with a warm LED bulb, boxed.',
+      buyer: { email: 'ada@example.com' },
+    })
+    expect(session.object).toBe('checkout_session')
+    await k.escrows.milestones.deliver(ids.escrow, ids.milestone, { note: 'Shipped with GIG' })
+  })
+
   it('reads and lists', async () => {
     expect((await k.checkoutSessions.retrieve(ids.session)).object).toBe('checkout_session')
     expect((await k.escrows.retrieve(ids.escrow)).object).toBe('escrow')

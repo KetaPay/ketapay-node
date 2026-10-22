@@ -22,6 +22,8 @@ export type Attachment = Schemas['Attachment']
 export type PartyInput =
   { email: string; phone?: string; name?: string | null } | { phone: string; email?: string; name?: string | null }
 export type Party = Schemas['Party']
+/** The seller when you sell your own goods (a checkout session with no `seller`): your business. */
+export type BusinessSeller = Schemas['BusinessSeller']
 
 /** A list that is not paginated. */
 export interface List<T> {
