@@ -3,6 +3,8 @@
 Server-side library for the [KetaPay API](https://docs.ketapay.com): put escrow inside your product. Typed, no runtime dependencies. Runs on Node 18+, Deno, Bun, Cloudflare Workers and Vercel Edge.
 
 > Beta. The API is in design partner testing and may still change.
+>
+> Coming soon: the library already has these calls, but the API doesn't serve them yet (they answer 404): `checkoutSessions.bankTransfer`, `escrows.cancel`, `escrows.milestones.releaseCode`, `disputes`, `chargebacks`, `files`, `banks`, `payoutAccounts` and `testHelpers.escrows.simulate`. A milestone's `payout` and `refund` are `null` for now.
 
 ## Install
 
