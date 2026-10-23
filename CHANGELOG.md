@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.0-beta.4](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.3...v0.1.0-beta.4) (2026-10-23)
+
+
+### Miscellaneous Chores
+
+* release 0.1.0-beta.4 ([#30](https://github.com/KetaPay/ketapay-node/issues/30)) ([f926562](https://github.com/KetaPay/ketapay-node/commit/f926562430a89044d943a56d7fe30da6b358374a))
+
 ## [0.1.0-beta.3](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.2...v0.1.0-beta.3) (2026-10-22)
 
 
