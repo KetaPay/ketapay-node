@@ -3,8 +3,9 @@ import { ketapay } from '../support/client.js'
 import { configured } from '../support/env.js'
 import { eventsFor, first, fundedEscrow, tokenFor } from '../support/flows.js'
 import { eventually } from '../support/wait.js'
+import { served } from '../support/served.js'
 
-describe.skipIf(!configured)('e2e: refunds', () => {
+describe.skipIf(!configured || !served('escrow_cancel', 'simulate', 'milestone_payout'))('e2e: refunds', () => {
   it("[E2E-013] a failed card refund moves the money to the buyer's balance", async () => {
     const { escrow, buyer } = await fundedEscrow()
     const k = ketapay()

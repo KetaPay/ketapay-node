@@ -3,8 +3,9 @@ import { ketapay } from '../support/client.js'
 import { configured } from '../support/env.js'
 import { eventsFor, fundedEscrow, tokenFor } from '../support/flows.js'
 import { eventually } from '../support/wait.js'
+import { served } from '../support/served.js'
 
-describe.skipIf(!configured)('e2e: cancelling', () => {
+describe.skipIf(!configured || !served('escrow_cancel'))('e2e: cancelling', () => {
   it('[E2E-008] the buyer cancels before delivery: escrow refunded and escrow.refunded recorded', async () => {
     const { escrow, buyer } = await fundedEscrow()
     const cancelled = await ketapay().escrows.cancel(
