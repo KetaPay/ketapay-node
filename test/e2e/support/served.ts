@@ -16,7 +16,6 @@ const NOT_SERVED_YET: ApiFeature[] = [
   'bank_transfer',
   'release_code',
   'escrow_cancel',
-  'disputes',
   'chargebacks',
   'payout_accounts',
   'simulate',
