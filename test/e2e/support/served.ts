@@ -18,7 +18,6 @@ const NOT_SERVED_YET: ApiFeature[] = [
   'escrow_cancel',
   'disputes',
   'chargebacks',
-  'files',
   'payout_accounts',
   'simulate',
   'milestone_payout', // always null for now

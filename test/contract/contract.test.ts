@@ -24,7 +24,7 @@ describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', ()
       title: 'Company website',
       description: 'Five-page marketing site with blog, built on Next.js.',
       images: [{ url: 'https://cdn.example.com/1.jpg' }],
-      attachments: [{ name: 'Brief.pdf', file: ids.file }],
+      attachments: [{ name: 'Brief.pdf', url: 'https://cdn.example.com/brief.pdf' }],
       milestones: [
         { title: 'Design', amount: 40_000_000 },
         { title: 'Build', amount: 110_000_000 },

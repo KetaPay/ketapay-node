@@ -21,9 +21,9 @@ export interface paths {
      *     **What is agreed.** `title` and `description` (both required) say what is being bought;
      *     `images` show it (the first is the cover on checkout, in messages and on the escrow);
      *     `attachments` hold documents such as a brief, a contract or title papers. KetaPay copies
-     *     all of it when the session is created and keeps that copy with the escrow as evidence
-     *     for any dispute, so later changes to your listing or record don't change what was
-     *     agreed.
+     *     all of it when the session is created, shows the buyer that copy at checkout and keeps
+     *     it with the escrow as evidence for any dispute, so later changes to your listing or
+     *     record don't change what was agreed. A link that can't be downloaded fails the request.
      *
      *     **Milestones.** Pass `milestones` to split the payment into stages released one at a
      *     time, in order. Leave it out for a single payment: KetaPay creates one milestone for
@@ -537,12 +537,15 @@ export interface paths {
      *
      *     | Purpose | Proof needed | Used in |
      *     | --- | --- | --- |
-     *     | `agreement` | Your key | Checkout session `attachments` |
      *     | `delivery` | Key plus the seller's customer token | Milestone delivery `attachments` |
      *     | `dispute_evidence` | Key plus the buyer's or seller's customer token | Dispute evidence `files` |
      *
-     *     A file can only be used by the customer who uploaded it, and only for its purpose.
-     *     Unused files are deleted after 24 hours.
+     *     Use it for files that start with your users, such as photos and videos taken on their
+     *     phone. Checkout `images` and `attachments` take links instead: KetaPay copies them.
+     *
+     *     A file can only be used by the customer who uploaded it (or by you, when you sell
+     *     yourself), only once, and only for its purpose. Unused files are deleted after 24 hours.
+     *     JPEG, PNG, HEIC, WebP, PDF and MP4, up to 25 MB.
      */
     post: operations['uploadFile']
     delete?: never
@@ -1201,36 +1204,45 @@ export interface components {
      */
     Phone: string
     /**
-     * @description Send either `file` (an id from `POST /files` with purpose `agreement`) or `url` (an HTTPS
-     *     link KetaPay copies). JPEG, PNG, HEIC or WebP. Responses carry KetaPay's own `url` plus a
-     *     small `thumbnail_url`.
+     * @description Send `url`, an HTTPS link to a JPEG, PNG, HEIC or WebP. KetaPay copies the image when the
+     *     session is created. Responses carry KetaPay's own `url` plus a small `thumbnail_url`.
      */
-    Image:
-      | {
-          /** Format: uuid */
-          file?: string
-          /** Format: uri */
-          url?: string
-          /** Format: uri */
-          readonly thumbnail_url?: string
-          /** @description Short description, for screen readers */
-          alt?: string | null
-        }
-      | {
-          /** Format: uuid */
-          file: string
-        }
-      | {
-          /** Format: uri */
-          url: string
-        }
+    Image: {
+      /**
+       * Format: uri
+       * @description In a request, your HTTPS link. In a response, a link to KetaPay's copy, valid for 1 hour.
+       */
+      url: string
+      /** Format: uri */
+      readonly thumbnail_url?: string
+      /** @description Short description, for screen readers */
+      alt?: string | null
+    }
     /**
-     * @description Send either `file` (an id from `POST /files`) or `url` (an HTTPS link KetaPay copies, so
-     *     it survives your copy being deleted). Responses always carry KetaPay's own `url`.
+     * @description A document. Send `url`, an HTTPS link KetaPay copies, so it survives your copy being deleted
+     *     or changed. Responses carry KetaPay's own `url` and the `sha256` of what was copied.
      */
-    Attachment:
+    Attachment: {
+      /** @example Project brief.pdf */
+      name?: string
+      /**
+       * Format: uri
+       * @description In a request, your HTTPS link. In a response, a link to KetaPay's copy, valid for 1 hour.
+       */
+      url: string
+      /**
+       * @description Fingerprint of the copy, to prove the file is the one that was agreed
+       * @example 9f2c4e1a7b3d5f6e8a0c2b4d6f8e1a3c5b7d9f0e2a4c6b8d0f1e3a5c7b9d2f4e
+       */
+      readonly sha256?: string
+    }
+    /**
+     * @description Proof of delivery. Send either `file` (an id from `POST /files` with purpose `delivery`,
+     *     for a photo or video the seller took) or `url` (an HTTPS link KetaPay copies).
+     */
+    DeliveryAttachment:
       | {
-          /** @example Project brief.pdf */
+          /** @example Delivered designs.pdf */
           name?: string
           /** Format: uuid */
           file?: string
@@ -1774,7 +1786,7 @@ export interface components {
     DeliverMilestoneRequest: {
       /** @description What was delivered, for the buyer */
       note?: string | null
-      attachments?: components['schemas']['Attachment'][]
+      attachments?: components['schemas']['DeliveryAttachment'][]
     }
     ReleaseMilestoneRequest: {
       /** @description Required for `release_code` escrows */
@@ -1915,7 +1927,7 @@ export interface components {
       created_at: string
     }
     /** @enum {string} */
-    FilePurpose: 'agreement' | 'delivery' | 'dispute_evidence'
+    FilePurpose: 'delivery' | 'dispute_evidence'
     File: {
       /** Format: uuid */
       id: string
