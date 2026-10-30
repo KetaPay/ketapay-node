@@ -5,8 +5,9 @@ import type { FileCreateParams, KetaPayFile } from './types.js'
 
 export class Files extends Resource {
   /**
-   * Uploads a file for checkout attachments (`agreement`, your key alone), milestone deliveries
-   * (`delivery`, seller's token) or dispute evidence (`dispute_evidence`, buyer's or seller's token).
+   * Uploads a file your customer gave you, for a milestone delivery (`delivery`, the seller's token)
+   * or dispute evidence (`dispute_evidence`, the buyer's or seller's token). Checkout images and
+   * attachments take links instead: KetaPay copies them.
    */
   create(params: FileCreateParams, options?: RequestOptions): APIPromise<KetaPayFile> {
     const blob =

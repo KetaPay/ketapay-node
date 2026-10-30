@@ -48,7 +48,7 @@ const calls: Record<string, Call> = {
   getChargeback: (k) => k.chargebacks.retrieve(ids.id),
   submitChargebackEvidence: (k) => k.chargebacks.submitEvidence(ids.id, { statement: 'Courier receipt' }, t),
   // Files
-  uploadFile: (k) => k.files.create({ file: new Uint8Array([1]), filename: 'a.pdf', purpose: 'agreement' }),
+  uploadFile: (k) => k.files.create({ file: new Uint8Array([1]), filename: 'a.pdf', purpose: 'delivery' }),
   // Payouts
   listBanks: (k) => k.banks.list(),
   createPayoutAccount: (k) => k.payoutAccounts.create({ bank_code: '057', account_number: '0123456789' }, t),
