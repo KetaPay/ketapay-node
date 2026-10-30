@@ -14,9 +14,7 @@ export type ApiFeature =
 const NOT_SERVED_YET: ApiFeature[] = [
   'bank_transfer',
   'release_code',
-  'disputes',
   'chargebacks',
-  'files',
   'payout_accounts',
   'simulate',
   'milestone_payout', // always null for now
