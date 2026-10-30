@@ -134,9 +134,9 @@ describe('logging', () => {
     const debug = vi.fn()
     const logger = { debug, info: vi.fn(), warn: vi.fn(), error: vi.fn() }
     const { fetch } = mockFetch({ body: {} })
-    await client(fetch, { logLevel: 'debug', logger }).escrows.cancel(
+    await client(fetch, { logLevel: 'debug', logger }).disputes.create(
       'e1',
-      { reason: 'secret reason' },
+      { reason: 'damaged', description: 'secret reason' },
       { customerToken: 'ctk_test_9' },
     )
     const logged = JSON.stringify(debug.mock.calls)

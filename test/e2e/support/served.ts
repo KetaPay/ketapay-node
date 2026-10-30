@@ -4,7 +4,6 @@
 export type ApiFeature =
   | 'bank_transfer' // POST /checkout_sessions/{id}/bank_transfer
   | 'release_code' // GET /escrows/{id}/milestones/{milestone_id}/release_code
-  | 'escrow_cancel' // POST /escrows/{id}/cancel
   | 'disputes' // /escrows/{id}/disputes, /disputes/*
   | 'chargebacks' // /escrows/{id}/chargebacks, /chargebacks/*
   | 'files' // POST /files
@@ -15,7 +14,6 @@ export type ApiFeature =
 const NOT_SERVED_YET: ApiFeature[] = [
   'bank_transfer',
   'release_code',
-  'escrow_cancel',
   'chargebacks',
   'payout_accounts',
   'simulate',

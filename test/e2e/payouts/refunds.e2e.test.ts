@@ -5,11 +5,16 @@ import { eventsFor, first, fundedEscrow, tokenFor } from '../support/flows.js'
 import { eventually } from '../support/wait.js'
 import { served } from '../support/served.js'
 
-describe.skipIf(!configured || !served('escrow_cancel', 'simulate', 'milestone_payout'))('e2e: refunds', () => {
+describe.skipIf(!configured || !served('disputes', 'simulate', 'milestone_payout'))('e2e: refunds', () => {
   it("[E2E-013] a failed card refund moves the money to the buyer's balance", async () => {
-    const { escrow, buyer } = await fundedEscrow()
+    const { escrow, buyer, seller } = await fundedEscrow()
     const k = ketapay()
-    await k.escrows.cancel(escrow.id, undefined, { customerToken: await tokenFor(buyer) })
+    const dispute = await k.disputes.create(
+      escrow.id,
+      { reason: 'not_received', description: 'Nothing was delivered by the due date.' },
+      { customerToken: await tokenFor(buyer) },
+    )
+    await k.disputes.concede(dispute.id, { customerToken: await tokenFor(seller) })
     const after = await k.testHelpers.escrows.simulate(escrow.id, {
       action: 'fail_refund',
       milestone_id: first(escrow).id,

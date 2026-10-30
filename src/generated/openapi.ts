@@ -287,36 +287,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/escrows/{id}/cancel': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * Cancel and refund the buyer
-     * @description Refunds the buyer every milestone not yet released; released milestones stay paid. Money
-     *     only ever goes back to the account that paid. KetaPay's buyer fee and VAT are not
-     *     refunded once the escrow is funded, the same rule as in the KetaPay app.
-     *
-     *     - **Seller's token:** any time (the seller gives up the rest of the deal).
-     *     - **Buyer's token:** only before any milestone is delivered or released. After that the
-     *       buyer reports a problem instead.
-     *
-     *     Refused while a dispute is open (the seller can refund through
-     *     `POST /disputes/{id}/concede`). Sends `escrow.refunded`, or `escrow.completed` if some
-     *     milestones were already released.
-     */
-    post: operations['cancelEscrow']
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/escrows/{id}/flag': {
     parameters: {
       query?: never
@@ -362,7 +332,7 @@ export interface paths {
      *       (`buyer_unresponsive`). This matters most where `auto_release_hours` is null.
      *
      *     A milestone dispute needs that milestone delivered. The whole escrow freezes: auto-release
-     *     pauses and the normal release and cancel calls are refused until the dispute ends, so an
+     *     pauses and the normal deliver and release calls are refused until the dispute ends, so an
      *     escrow has one open dispute at a time (a second one is `dispute_open`). Evidence goes
      *     through `POST /disputes/{id}/evidence`; `files` here is the first of it. Sends
      *     `dispute.opened`.
@@ -820,8 +790,7 @@ export interface paths {
      *     | `deliver` | Seller | `milestone_id` |
      *     | `release` | Buyer | `milestone_id` |
      *     | `auto_release` | The clock: skips to the end of the auto-release window | `milestone_id` |
-     *     | `cancel` | `actor` (`buyer` or `seller`) | |
-     *     | `open_dispute` | `actor` | `milestone_id` optional, `reason` |
+     *     | `open_dispute` | `actor` (`buyer` or `seller`) | `milestone_id` optional, `reason` |
      *     | `request_evidence` | KetaPay | `from` (`buyer`, `seller` or `both`) |
      *     | `resolve_dispute` | KetaPay | `outcome`, `refunded_amount` for a partial refund |
      *     | `open_chargeback` | The buyer's card bank | `amount` optional |
@@ -1809,9 +1778,6 @@ export interface components {
       /** @example 731045 */
       code: string
     }
-    CancelEscrowRequest: {
-      reason?: string | null
-    }
     CreateFlagRequest: {
       /** @enum {string} */
       reason: 'fraudulent_listing' | 'banned_seller' | 'banned_buyer' | 'suspicious_activity' | 'other'
@@ -2139,7 +2105,6 @@ export interface components {
         | 'deliver'
         | 'release'
         | 'auto_release'
-        | 'cancel'
         | 'open_dispute'
         | 'request_evidence'
         | 'resolve_dispute'
@@ -2817,38 +2782,6 @@ export interface operations {
           'application/json': components['schemas']['ReleaseCode']
         }
       }
-      401: components['responses']['Unauthenticated']
-      403: components['responses']['NotParty']
-      404: components['responses']['NotFound']
-      409: components['responses']['StateConflict']
-      429: components['responses']['RateLimited']
-    }
-  }
-  cancelEscrow: {
-    parameters: {
-      query?: never
-      header: {
-        /** @description Unique key for this operation. Retries with the same key return the first result. */
-        'Idempotency-Key': components['parameters']['IdempotencyKey']
-      }
-      path: {
-        id: components['parameters']['Id']
-      }
-      cookie?: never
-    }
-    requestBody?: {
-      content: {
-        /**
-         * @example {
-         *       "reason": "Project cancelled by agreement"
-         *     }
-         */
-        'application/json': components['schemas']['CancelEscrowRequest']
-      }
-    }
-    responses: {
-      200: components['responses']['EscrowUpdated']
-      400: components['responses']['InvalidRequest']
       401: components['responses']['Unauthenticated']
       403: components['responses']['NotParty']
       404: components['responses']['NotFound']

@@ -44,8 +44,9 @@ describe('test catalogue coverage', () => {
     expect(catalogue.has('E2E-001')).toBe(true)
   })
 
+  // A retired row keeps its ID (never reused) but needs no test
   it('[SPEC-006] has a tagged test for every scenario in the catalogue', () => {
-    const missing = [...catalogue.keys()].filter((id) => !tagged.has(id))
+    const missing = [...catalogue.keys()].filter((id) => !tagged.has(id) && !catalogue.get(id)!.includes(': retired'))
     expect(
       missing,
       `Write tests tagged with: ${missing.map((id) => `${id} (${catalogue.get(id)})`).join('; ')}`,
