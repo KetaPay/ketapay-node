@@ -58,7 +58,7 @@ await ketapay.checkoutSessions.create({
 
 ## Acting for your customer
 
-Moving money (delivering, releasing, cancelling, disputes, payout accounts) needs proof from your customer. KetaPay sends them a one-time code; you exchange it for a 15-minute customer token:
+Moving money (delivering, releasing, disputes, payout accounts) needs proof from your customer. KetaPay sends them a one-time code; you exchange it for a 15-minute customer token:
 
 ```ts
 const otp = await ketapay.customerSessions.create({ email: 'ada@example.com' })

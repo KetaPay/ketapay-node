@@ -31,7 +31,6 @@ const calls: Record<string, Call> = {
   // Escrows and milestones
   listEscrows: (k) => k.escrows.list(),
   getEscrow: (k) => k.escrows.retrieve(ids.id),
-  cancelEscrow: (k) => k.escrows.cancel(ids.id, undefined, t),
   flagEscrow: (k) => k.escrows.flag(ids.id, { reason: 'banned_seller' }),
   deliverMilestone: (k) => k.escrows.milestones.deliver(ids.id, ids.milestone_id, {}, t),
   releaseMilestone: (k) => k.escrows.milestones.release(ids.id, ids.milestone_id, { release_code: '123456' }),

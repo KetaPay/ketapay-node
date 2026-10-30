@@ -17,8 +17,8 @@ describe('security', () => {
     const k = new KetaPay('sk_test_x')
     // Never called: these lines only have to fail type-checking (npm run typecheck covers test files).
     const unused = () => {
-      // @ts-expect-error a customer token is required to cancel an escrow
-      void k.escrows.cancel('e1', undefined, {})
+      // @ts-expect-error a customer token is required to concede a dispute
+      void k.disputes.concede('d1', {})
       // @ts-expect-error a customer token is required to open a dispute
       void k.disputes.create('e1', { reason: 'damaged', description: 'Arrived cracked' })
       // @ts-expect-error a customer token is required to add a payout account
