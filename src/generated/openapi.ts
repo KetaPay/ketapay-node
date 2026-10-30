@@ -361,10 +361,11 @@ export interface paths {
      *     - **The seller**, when they delivered but the buyer won't release or respond
      *       (`buyer_unresponsive`). This matters most where `auto_release_hours` is null.
      *
-     *     The affected milestones freeze: their auto-release pauses and the normal release and
-     *     cancel calls are refused until the dispute ends. Only one dispute per milestone can be
-     *     open at a time. Evidence and the discussion happen in the dispute room at the returned
-     *     `url`, or through `POST /disputes/{id}/evidence`. Sends `dispute.opened`.
+     *     A milestone dispute needs that milestone delivered. The whole escrow freezes: auto-release
+     *     pauses and the normal release and cancel calls are refused until the dispute ends, so an
+     *     escrow has one open dispute at a time (a second one is `dispute_open`). Evidence goes
+     *     through `POST /disputes/{id}/evidence`; `files` here is the first of it. Sends
+     *     `dispute.opened`.
      */
     post: operations['openDispute']
     delete?: never
@@ -404,11 +405,14 @@ export interface paths {
      * @description Ends the dispute in the other side's favour, the same rule as in the KetaPay app: a
      *     party can only ever give money away, never take it.
      *
-     *     - **Buyer's token:** releases the disputed milestones to the seller.
-     *     - **Seller's token:** refunds the disputed milestones to the buyer.
+     *     - **Buyer's token:** releases the disputed milestone to the seller (the whole escrow for an
+     *       escrow dispute).
+     *     - **Seller's token:** refunds everything still held to the buyer. On a milestone dispute
+     *       the remaining milestones are cancelled too, and the escrow ends `refunded`.
      *
-     *     Whoever opened the dispute can concede too. Sends `dispute.resolved`, then the money
-     *     events.
+     *     Whoever opened the dispute can concede too. Only while it is `open`: once KetaPay is
+     *     deciding it is `escrow_under_review`, and once it has ended `dispute_not_open`. Sends
+     *     `dispute.resolved`, then the money events.
      */
     post: operations['concedeDispute']
     delete?: never
@@ -428,8 +432,8 @@ export interface paths {
     put?: never
     /**
      * Withdraw a dispute
-     * @description Only whoever opened it, with their customer token. No money moves; the deal carries on
-     *     where it was, and paused auto-release timers restart. Sends `dispute.resolved` with
+     * @description Only whoever opened it, with their customer token, while it is `open`. No money moves; the
+     *     deal carries on where it was, and paused auto-release timers restart. Sends `dispute.resolved` with
      *     `outcome` `withdrawn`.
      */
     post: operations['withdrawDispute']
@@ -448,14 +452,17 @@ export interface paths {
     }
     /**
      * List evidence
-     * @description Everything both sides have submitted, oldest first. Needs the buyer's or the seller's customer token.
+     * @description Everything both sides have submitted, oldest first, including files they added in the
+     *     KetaPay app (each on its own, with a null `statement`). Needs the buyer's or the seller's
+     *     customer token.
      */
     get: operations['listDisputeEvidence']
     put?: never
     /**
      * Submit evidence
      * @description Adds a statement and files to an open dispute, for the buyer or the seller whose customer
-     *     token you send. Each side can submit as many times as they need until KetaPay decides.
+     *     token you send. Each side can submit as many times as they need until the dispute ends
+     *     (`dispute_not_open` after).
      *     Sends `dispute.evidence_submitted`.
      */
     post: operations['submitDisputeEvidence']
@@ -1290,7 +1297,7 @@ export interface components {
          *     `commission_not_allowed`,
          *     `release_settings_invalid`, `verification_required`, `checkout_session_not_open`,
          *     `escrow_already_flagged`, `escrow_state_invalid`, `milestone_not_current`,
-         *     `milestone_not_delivered`, `dispute_open`, `escrow_under_review`,
+         *     `milestone_not_delivered`, `dispute_open`, `dispute_not_open`, `escrow_under_review`,
          *     `release_code_invalid`, `release_code_locked`, `code_invalid`, `code_expired`,
          *     `too_many_attempts`, `customer_token_required`, `customer_token_expired`,
          *     `customer_not_allowed`, `bank_account_not_found`, `file_too_large`,
@@ -1885,10 +1892,11 @@ export interface components {
       refunded_amount?: components['schemas']['Amount'] | null
       /**
        * Format: uri
-       * @description The dispute room, where the buyer and seller add evidence and talk to KetaPay
-       * @example https://app.ketapay.com/disputes/8e2f4a6c-1d3b-4c7e-9a5f-0b2d4f6a8c13
+       * @description A KetaPay page for the dispute. Always null for now: KetaPay runs the dispute and the
+       *     buyer and seller act through your UI (concede, withdraw, evidence).
+       * @example null
        */
-      url: string
+      url: string | null
       /**
        * @description Who KetaPay is waiting on for evidence, if anyone
        * @enum {string|null}
@@ -1921,7 +1929,8 @@ export interface components {
       dispute_id: string
       /** @enum {string} */
       submitted_by: 'buyer' | 'seller'
-      statement: string
+      /** @description Null for a file the customer added in the KetaPay app, which comes without one */
+      statement: string | null
       files: components['schemas']['File'][]
       /** Format: date-time */
       created_at: string
@@ -2319,7 +2328,7 @@ export interface components {
         'application/json': components['schemas']['Error']
       }
     }
-    /** @description Not allowed in the current state (`escrow_state_invalid`, `milestone_not_current`, `milestone_not_delivered`, `dispute_open`, `escrow_under_review`, `checkout_session_not_open`, `release_code_locked`), or the idempotency key was reused */
+    /** @description Not allowed in the current state (`escrow_state_invalid`, `milestone_not_current`, `milestone_not_delivered`, `dispute_open`, `dispute_not_open`, `escrow_under_review`, `checkout_session_not_open`, `release_code_locked`), or the idempotency key was reused */
     StateConflict: {
       headers: {
         [name: string]: unknown
