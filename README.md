@@ -21,7 +21,6 @@ const ketapay = new KetaPay(process.env.KETAPAY_SECRET_KEY!) // sk_test_... or s
 
 const session = await ketapay.checkoutSessions.create({
   amount: 45_000_000, // kobo: ₦450,000
-  category: 'goods',
   title: 'iPhone 15 Pro Max 256GB',
   description: 'Used, 91% battery, no scratches, Face ID works. Comes with box and cable.',
   images: [{ url: 'https://cdn.example.com/listings/8812/1.jpg' }],
@@ -41,7 +40,6 @@ Use your secret key on your server only. Publishable keys (`pk_`) are rejected h
 ```ts
 await ketapay.checkoutSessions.create({
   amount: 150_000_000,
-  category: 'services',
   title: 'Company website',
   description: 'Five-page marketing site with blog. Brief attached.',
   milestones: [

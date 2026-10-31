@@ -13,7 +13,6 @@ export type ApiFeature =
 
 const NOT_SERVED_YET: ApiFeature[] = [
   'bank_transfer',
-  'release_code',
   'chargebacks',
   'payout_accounts',
   'simulate',
