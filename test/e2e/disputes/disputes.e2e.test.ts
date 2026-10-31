@@ -54,6 +54,26 @@ describe.skipIf(!configured)('e2e: disputes', () => {
     },
   )
 
+  it.skipIf(!served('disputes'))(
+    '[E2E-030] an escalated dispute is under review and can no longer be settled',
+    async () => {
+      const { escrow, buyer, seller } = await fundedEscrow()
+      const k = ketapay()
+      const buyerToken = { customerToken: await tokenFor(buyer) }
+      const dispute = await k.disputes.create(
+        escrow.id,
+        { reason: 'not_as_agreed', description: 'The work does not match the brief at all.' },
+        buyerToken,
+      )
+      const escalated = await k.disputes.escalate(dispute.id, buyerToken)
+      expect([escalated.status, escalated.outcome]).toEqual(['under_review', null])
+      await expect(k.disputes.concede(dispute.id, { customerToken: await tokenFor(seller) })).rejects.toMatchObject({
+        code: 'escrow_under_review',
+      })
+      expect((await k.escrows.retrieve(escrow.id)).status).toBe('disputed')
+    },
+  )
+
   it.skipIf(!served('disputes'))('[E2E-021] an open dispute blocks the normal release', async () => {
     const { escrow, buyer, seller } = await fundedEscrow()
     const k = ketapay()

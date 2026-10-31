@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { ketapay } from '../support/client.js'
-import { configured } from '../support/env.js'
+import { configured, env } from '../support/env.js'
 import { people, sessionParams } from '../support/fixtures.js'
 import { first, fundedEscrow, tokenFor } from '../support/flows.js'
 
@@ -35,4 +35,31 @@ describe.skipIf(!configured)('e2e: the business sells its own goods', () => {
       code: 'customer_token_required',
     })
   })
+
+  it('[E2E-028] refunds an own sale with the key alone, and the money action can be read back', async () => {
+    const who = people()
+    const k = ketapay()
+    const session = await k.checkoutSessions.create(sessionParams(who, { seller: undefined }))
+    const paid = await k.testHelpers.checkoutSessions.pay(session.id)
+    const action = await k.escrows.refund(paid.escrow_id!, { reason: 'Out of stock, agreed with the customer.' })
+    expect([action.object, action.action, action.status]).toEqual(['money_action', 'refund', 'executed'])
+    expect((await k.escrows.retrieve(paid.escrow_id!)).status).toBe('refunded')
+    expect(await k.moneyActions.retrieve(action.id)).toEqual(action)
+  })
+
+  it.skipIf(!env.restrictedKey)(
+    '[E2E-029] a key without escrows:manage cannot refund, and the escrow stays funded',
+    async () => {
+      const who = people()
+      const k = ketapay()
+      const session = await k.checkoutSessions.create(sessionParams(who, { seller: undefined }))
+      const paid = await k.testHelpers.checkoutSessions.pay(session.id)
+      await expect(
+        ketapay(env.restrictedKey!).escrows.refund(paid.escrow_id!, {
+          reason: 'Out of stock, agreed with the customer.',
+        }),
+      ).rejects.toMatchObject({ code: 'missing_scope' })
+      expect((await k.escrows.retrieve(paid.escrow_id!)).status).toBe('active')
+    },
+  )
 })

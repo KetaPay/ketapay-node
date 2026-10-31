@@ -24,6 +24,11 @@ export class Disputes extends Resource {
     return this.http.request('POST', `/disputes/${seg(id)}/concede`, { options })
   }
 
+  /** Hands an open dispute to KetaPay to decide, for the customer whose token you send. No money moves. */
+  escalate(id: string, options: CustomerRequestOptions): APIPromise<Dispute> {
+    return this.http.request('POST', `/disputes/${seg(id)}/escalate`, { options })
+  }
+
   /** Withdraws a dispute. Only whoever opened it. */
   withdraw(id: string, options: CustomerRequestOptions): APIPromise<Dispute> {
     return this.http.request('POST', `/disputes/${seg(id)}/withdraw`, { options })

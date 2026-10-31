@@ -4,12 +4,14 @@
 //   KETAPAY_E2E_SECRET_KEY        sk_test_ key of the e2e organisation                (required)
 //   KETAPAY_E2E_OTHER_SECRET_KEY  sk_test_ key of a second organisation, for isolation tests
 //   KETAPAY_E2E_LIVE_SECRET_KEY   sk_live_ key on staging, for the live-key refusal test
+//   KETAPAY_E2E_RESTRICTED_SECRET_KEY  sk_test_ key of the e2e organisation without escrows:manage, for the scope test
 //   KETAPAY_E2E_WEBHOOK_URL       an HTTPS URL that answers 200, for webhook delivery tests
 export const env = {
   baseUrl: process.env.KETAPAY_E2E_BASE_URL,
   key: process.env.KETAPAY_E2E_SECRET_KEY,
   otherKey: process.env.KETAPAY_E2E_OTHER_SECRET_KEY,
   liveKey: process.env.KETAPAY_E2E_LIVE_SECRET_KEY,
+  restrictedKey: process.env.KETAPAY_E2E_RESTRICTED_SECRET_KEY,
   webhookUrl: process.env.KETAPAY_E2E_WEBHOOK_URL,
 }
 
