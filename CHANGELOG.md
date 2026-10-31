@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.1.0-beta.5](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.4...v0.1.0-beta.5) (2026-10-31)
+
+
+### ⚠ BREAKING CHANGES
+
+* drop category from checkout sessions and escrows ([#39](https://github.com/KetaPay/ketapay-node/issues/39))
+* **escrows:** remove escrows.cancel, following the spec ([#37](https://github.com/KetaPay/ketapay-node/issues/37))
+
+### Features
+
+* **disputes:** follow the spec and serve disputes in e2e ([#36](https://github.com/KetaPay/ketapay-node/issues/36)) ([fdc20d2](https://github.com/KetaPay/ketapay-node/commit/fdc20d22aaa1e4799a22027d78f6ba7388807d3c))
+* drop category from checkout sessions and escrows ([#39](https://github.com/KetaPay/ketapay-node/issues/39)) ([c6f9419](https://github.com/KetaPay/ketapay-node/commit/c6f94192769cdae1016c712aea40166f6e7dea22))
+* **escrows:** remove escrows.cancel, following the spec ([#37](https://github.com/KetaPay/ketapay-node/issues/37)) ([4c4787c](https://github.com/KetaPay/ketapay-node/commit/4c4787c92f828846cfef88a399ea6a3bcfd3609a))
+* **files:** follow the spec's file changes and serve files in e2e ([#35](https://github.com/KetaPay/ketapay-node/issues/35)) ([331f5ee](https://github.com/KetaPay/ketapay-node/commit/331f5eeb554514aad9bca87f6273f64c6d366308))
+* refund an escrow, read a money action, escalate a dispute ([#41](https://github.com/KetaPay/ketapay-node/issues/41)) ([40c77e1](https://github.com/KetaPay/ketapay-node/commit/40c77e1039ad38f7a791f2c50db15585ecd8d138))
+
+
+### Bug Fixes
+
+* **deps:** override lodash to ^4.18.1 for the security advisory ([#32](https://github.com/KetaPay/ketapay-node/issues/32)) ([8e9b718](https://github.com/KetaPay/ketapay-node/commit/8e9b718258ea9a67f30fe35555e31e869e821bb4))
+
 ## [0.1.0-beta.4](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.3...v0.1.0-beta.4) (2026-10-23)
 
 
