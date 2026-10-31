@@ -6,7 +6,6 @@ export type Schemas = components['schemas']
 
 export type Amount = Schemas['Amount']
 export type Metadata = Schemas['Metadata']
-export type Category = Schemas['Category']
 export type Deleted = Schemas['Deleted']
 export type ApiErrorBody = Schemas['Error']
 

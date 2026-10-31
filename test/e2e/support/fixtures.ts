@@ -21,7 +21,6 @@ export function sessionParams(
 ): CheckoutSessionCreateParams {
   return {
     amount: 1_500_000,
-    category: 'services',
     title: 'E2E website build',
     description: 'Three-page site, built by the e2e suite to test escrow flows.',
     milestones: [

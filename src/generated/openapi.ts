@@ -1288,12 +1288,6 @@ export interface components {
         request_id: string
       }
     }
-    /**
-     * @description What kind of deal this is. KetaPay uses it for risk checks and dispute handling.
-     * @default other
-     * @enum {string}
-     */
-    Category: 'goods' | 'services' | 'property' | 'vehicle' | 'digital' | 'other'
     Release: {
       /**
        * @description `buyer_confirms`: the seller delivers each milestone and the buyer releases it.
@@ -1373,7 +1367,6 @@ export interface components {
        * @enum {string}
        */
       currency?: 'NGN'
-      category?: components['schemas']['Category']
       /**
        * @description What is being bought, in a few words
        * @example Company website
@@ -1486,7 +1479,6 @@ export interface components {
       /** @constant */
       currency: 'NGN'
       fees: components['schemas']['Fees']
-      category: components['schemas']['Category']
       title: string
       description: string
       /** @description KetaPay's copies, in order; the first is the cover */
@@ -1718,7 +1710,6 @@ export interface components {
       /** @constant */
       currency: 'NGN'
       fees: components['schemas']['Fees']
-      category: components['schemas']['Category']
       title: string
       description: string
       /** @description KetaPay's copies of the images sent at checkout; the first is the cover */
