@@ -1098,8 +1098,10 @@ export interface webhooks {
     put?: never
     /**
      * refund.sent
-     * @description Money went back to the buyer's card or bank account. `data.object` is the `Refund`.
-     *     Card refunds can take 5 to 10 working days to show on the buyer's statement.
+     * @description Money went back to the buyer. `data.object` is the `Refund`; its `destination` says
+     *     where. During the beta every refund goes to the buyer's KetaPay balance at once. Once
+     *     refunds to the card go live, those can take 5 to 10 working days to show on the
+     *     buyer's statement.
      */
     post: operations['onRefundSent']
     delete?: never
@@ -2051,7 +2053,9 @@ export interface components {
       milestone_id: string
       amount: components['schemas']['Amount']
       /**
-       * @description Where the money went. `ketapay_balance` after a failed card or bank refund.
+       * @description Where the money went. Always `ketapay_balance` during the beta; `card` and
+       *     `bank_account` once refunds back the way the money came go live (and
+       *     `ketapay_balance` after one of those fails).
        * @enum {string}
        */
       destination: 'card' | 'bank_account' | 'ketapay_balance'
