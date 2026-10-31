@@ -309,6 +309,51 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/escrows/{id}/refund': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Refund an escrow
+     * @description Refunds the buyer on a sale your business made itself, with your key alone. Everything
+     *     KetaPay still holds on the escrow goes back; milestones already released stay paid, and
+     *     the buyer's fee and its VAT are kept. Partial refunds aren't supported.
+     *
+     *     Needs a key with the `escrows:manage` scope, which is never added to an existing key and
+     *     has to be chosen when the key is made. Refused while the escrow has an open dispute
+     *     (`dispute_open`) or is under review (`escrow_under_review`). A sale between two of your
+     *     customers needs an approved platform (`platform_not_approved`) that KetaPay hasn't paused
+     *     (`rulings_paused`). Sends `escrow.refunded`.
+     */
+    post: operations['refundEscrow']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/money_actions/{id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Get a money action */
+    get: operations['getMoneyAction']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/escrows/{id}/disputes': {
     parameters: {
       query?: never
@@ -385,6 +430,29 @@ export interface paths {
      *     `dispute.resolved`, then the money events.
      */
     post: operations['concedeDispute']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/disputes/{id}/escalate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Ask KetaPay to decide
+     * @description Hands an `open` dispute to KetaPay, for the buyer or the seller whose customer token you
+     *     send (or your key alone when your business is the seller). The status becomes
+     *     `under_review` and both sides are told. No money moves, and neither side can concede or
+     *     withdraw after this (`escrow_under_review`). Evidence is still welcome until it ends.
+     */
+    post: operations['escalateDispute']
     delete?: never
     options?: never
     head?: never
@@ -1030,8 +1098,10 @@ export interface webhooks {
     put?: never
     /**
      * refund.sent
-     * @description Money went back to the buyer's card or bank account. `data.object` is the `Refund`.
-     *     Card refunds can take 5 to 10 working days to show on the buyer's statement.
+     * @description Money went back to the buyer. `data.object` is the `Refund`; its `destination` says
+     *     where. During the beta every refund goes to the buyer's KetaPay balance at once. Once
+     *     refunds to the card go live, those can take 5 to 10 working days to show on the
+     *     buyer's statement.
      */
     post: operations['onRefundSent']
     delete?: never
@@ -1272,6 +1342,8 @@ export interface components {
          *     `customer_not_allowed`, `bank_account_not_found`, `file_too_large`,
          *     `file_type_not_allowed`, `file_not_usable`, `resource_not_found`,
          *     `api_key_invalid`, `api_key_expired`, `missing_scope`, `live_mode_not_enabled`,
+         *     `platform_not_approved`, `rulings_paused`, `daily_limit_reached`,
+         *     `action_already_scheduled`,
          *     `idempotency_key_missing`, `idempotency_key_reused`, `rate_limited`, `test_mode_only`,
          *     `internal_error`. New codes may be added.
          * @example parameter_invalid
@@ -1391,7 +1463,10 @@ export interface components {
       buyer: components['schemas']['PartyInput']
       /**
        * @description Who gets paid. Leave it out when you sell your own goods: your business is the seller,
-       *     by its name, and each release is paid into your KetaPay balance.
+       *     by its name, and each release is paid into your KetaPay balance. Naming a seller makes
+       *     this a sale between two of your customers, which needs an approved platform: live keys
+       *     are refused with `platform_not_approved` until KetaPay approves your business, and test
+       *     keys until you ask to be one.
        */
       seller?: components['schemas']['PartyInput']
       release?: components['schemas']['Release']
@@ -1790,6 +1865,47 @@ export interface components {
       /** Format: date-time */
       created_at: string
     }
+    CreateRefundRequest: {
+      /** @description Why you are refunding. Kept with the record of who did it. */
+      reason: string
+    }
+    /**
+     * @description One decision a business made that moves money, and who made it. KetaPay moves the money and
+     *     keeps this record for good.
+     */
+    MoneyAction: {
+      /** Format: uuid */
+      id: string
+      /** @constant */
+      object: 'money_action'
+      livemode: boolean
+      /** @enum {string} */
+      action: 'release' | 'refund' | 'ruling_release' | 'ruling_refund'
+      /**
+       * @description `scheduled` is waiting for `execute_after`, `executing` is moving the money. `executed`
+       *     is done. `cancelled` was overtaken or stopped before any money moved. `failed` didn't
+       *     move the money, and KetaPay is looking into it.
+       * @enum {string}
+       */
+      status: 'scheduled' | 'executing' | 'executed' | 'cancelled' | 'failed'
+      amount: components['schemas']['Amount']
+      /** Format: uuid */
+      escrow_id: string
+      /** Format: uuid */
+      milestone_id: string | null
+      /** Format: uuid */
+      dispute_id: string | null
+      reason: string
+      /**
+       * Format: date-time
+       * @description When the money moves. A refund moves at once
+       */
+      execute_after: string
+      /** Format: date-time */
+      executed_at: string | null
+      /** Format: date-time */
+      created_at: string
+    }
     /**
      * @description Buyer reasons: `not_received` (goods or work never arrived), `not_as_agreed` (differs
      *     from what was agreed), `damaged`, `incomplete` (only part was delivered). Seller reason:
@@ -1855,13 +1971,13 @@ export interface components {
        */
       url: string | null
       /**
-       * @description Who KetaPay is waiting on for evidence, if anyone
+       * @description Who KetaPay is waiting on for evidence. `both` until `evidence_due_at` passes or the dispute ends, then null
        * @enum {string|null}
        */
       awaiting_evidence_from: 'buyer' | 'seller' | 'both' | null
       /**
        * Format: date-time
-       * @description Deadline for the evidence KetaPay asked for
+       * @description When the evidence window ends, 72 hours after opening. It moves no money, and late evidence is still taken
        */
       evidence_due_at: string | null
       /** @description How many evidence submissions both sides have made */
@@ -1928,7 +2044,9 @@ export interface components {
       milestone_id: string
       amount: components['schemas']['Amount']
       /**
-       * @description Where the money went. `ketapay_balance` after a failed card or bank refund.
+       * @description Where the money went. Always `ketapay_balance` during the beta; `card` and
+       *     `bank_account` once refunds back the way the money came go live (and
+       *     `ketapay_balance` after one of those fails).
        * @enum {string}
        */
       destination: 'card' | 'bank_account' | 'ketapay_balance'
@@ -2244,7 +2362,7 @@ export interface components {
         'application/json': components['schemas']['Error']
       }
     }
-    /** @description The key lacks the scope, or the organisation can't do this yet (for example live keys before verification) */
+    /** @description The key lacks the scope, or the organisation can't do this yet (for example live keys before verification, `platform_not_approved`, `rulings_paused`, `daily_limit_reached`) */
     Forbidden: {
       headers: {
         [name: string]: unknown
@@ -2284,7 +2402,7 @@ export interface components {
         'application/json': components['schemas']['Error']
       }
     }
-    /** @description Not allowed in the current state (`escrow_state_invalid`, `milestone_not_current`, `milestone_not_delivered`, `dispute_open`, `dispute_not_open`, `escrow_under_review`, `checkout_session_not_open`, `release_code_locked`), or the idempotency key was reused */
+    /** @description Not allowed in the current state (`escrow_state_invalid`, `milestone_not_current`, `milestone_not_delivered`, `dispute_open`, `dispute_not_open`, `escrow_under_review`, `checkout_session_not_open`, `release_code_locked`, `action_already_scheduled`), or the idempotency key was reused */
     StateConflict: {
       headers: {
         [name: string]: unknown
@@ -2820,6 +2938,72 @@ export interface operations {
       429: components['responses']['RateLimited']
     }
   }
+  refundEscrow: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Unique key for this operation. Retries with the same key return the first result. */
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path: {
+        id: components['parameters']['Id']
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "reason": "Out of stock, the customer agreed to a refund by phone."
+         *     }
+         */
+        'application/json': components['schemas']['CreateRefundRequest']
+      }
+    }
+    responses: {
+      /** @description Refunded. The money action is `executed`. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MoneyAction']
+        }
+      }
+      400: components['responses']['InvalidRequest']
+      401: components['responses']['Unauthenticated']
+      403: components['responses']['Forbidden']
+      404: components['responses']['NotFound']
+      409: components['responses']['StateConflict']
+      429: components['responses']['RateLimited']
+    }
+  }
+  getMoneyAction: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        id: components['parameters']['Id']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The money action */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MoneyAction']
+        }
+      }
+      401: components['responses']['Unauthenticated']
+      403: components['responses']['Forbidden']
+      404: components['responses']['NotFound']
+      429: components['responses']['RateLimited']
+    }
+  }
   listEscrowDisputes: {
     parameters: {
       query?: never
@@ -2931,6 +3115,36 @@ export interface operations {
     requestBody?: never
     responses: {
       /** @description The resolved dispute */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Dispute']
+        }
+      }
+      401: components['responses']['Unauthenticated']
+      403: components['responses']['NotParty']
+      404: components['responses']['NotFound']
+      409: components['responses']['StateConflict']
+      429: components['responses']['RateLimited']
+    }
+  }
+  escalateDispute: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Unique key for this operation. Retries with the same key return the first result. */
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path: {
+        id: components['parameters']['Id']
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The dispute, now `under_review` */
       200: {
         headers: {
           [name: string]: unknown

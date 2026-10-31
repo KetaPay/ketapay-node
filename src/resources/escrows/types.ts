@@ -12,6 +12,7 @@ export type Flag = Schemas['Flag']
 
 export type EscrowListParams = NonNullable<operations['listEscrows']['parameters']['query']>
 export type EscrowFlagParams = Schemas['CreateFlagRequest']
+export type EscrowRefundParams = Schemas['CreateRefundRequest']
 export type MilestoneDeliverParams = Omit<Schemas['DeliverMilestoneRequest'], 'attachments'> & {
   attachments?: AttachmentInput[]
 }

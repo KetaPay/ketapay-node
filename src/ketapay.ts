@@ -3,6 +3,7 @@ import type { KetaPayConfig, KetaPayOptions } from './core/options.js'
 import { CheckoutSessions } from './resources/checkout/index.js'
 import { CustomerSessions } from './resources/customers/index.js'
 import { Chargebacks, Disputes } from './resources/disputes/index.js'
+import { MoneyActions } from './resources/money-actions/index.js'
 import { Escrows } from './resources/escrows/index.js'
 import { Files } from './resources/files/index.js'
 import { Banks, PayoutAccounts } from './resources/payouts/index.js'
@@ -18,6 +19,8 @@ export class KetaPay {
   readonly escrows: Escrows
   // Disputes
   readonly disputes: Disputes
+  // What your business decided that moved money
+  readonly moneyActions: MoneyActions
   readonly chargebacks: Chargebacks
   // Payouts
   readonly payoutAccounts: PayoutAccounts
@@ -48,6 +51,7 @@ export class KetaPay {
     this.customerSessions = new CustomerSessions(http)
     this.escrows = new Escrows(http)
     this.disputes = new Disputes(http)
+    this.moneyActions = new MoneyActions(http)
     this.chargebacks = new Chargebacks(http)
     this.payoutAccounts = new PayoutAccounts(http)
     this.banks = new Banks(http)

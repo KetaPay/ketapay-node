@@ -32,6 +32,24 @@ describe('request bodies', () => {
     expect(JSON.parse(String(calls[0]!.body))).toEqual({ note: 'Shipped with GIG' })
   })
 
+  it('[REQ-011] refunds with the reason in the body and an idempotency key, and no customer token', async () => {
+    const { fetch, calls } = mockFetch({ body: {} })
+    await client(fetch).escrows.refund('e1', { reason: 'Out of stock, agreed by phone' })
+    expect(JSON.parse(String(calls[0]!.body))).toEqual({ reason: 'Out of stock, agreed by phone' })
+    expect(calls[0]!.headers).toHaveProperty('Idempotency-Key')
+    expect(calls[0]!.headers).not.toHaveProperty('KetaPay-Customer-Token')
+  })
+
+  it('[REQ-012] escalates a dispute with the customer token and an idempotency key, and no body', async () => {
+    const { fetch, calls } = mockFetch({ body: {} })
+    await client(fetch).disputes.escalate('d1', { customerToken: 'tok' })
+    expect(calls[0]!.url).toContain('/disputes/d1/escalate')
+    expect(calls[0]!.method).toBe('POST')
+    expect(calls[0]!.body).toBeFalsy()
+    expect(calls[0]!.headers).toMatchObject({ 'KetaPay-Customer-Token': 'tok' })
+    expect(calls[0]!.headers).toHaveProperty('Idempotency-Key')
+  })
+
   it('[REQ-008] creates a webhook endpoint from a URL alone, leaving the events to the API default', async () => {
     const { fetch, calls } = mockFetch({ body: {} })
     await client(fetch).webhookEndpoints.create({ url: 'https://example.com/hooks' })
