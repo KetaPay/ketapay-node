@@ -20,7 +20,6 @@ describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', ()
   it('creates a checkout session with milestones, images and both contacts', async () => {
     const session = await k.checkoutSessions.create({
       amount: 150_000_000,
-      category: 'services',
       title: 'Company website',
       description: 'Five-page marketing site with blog, built on Next.js.',
       images: [{ url: 'https://cdn.example.com/1.jpg' }],
