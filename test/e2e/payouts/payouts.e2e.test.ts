@@ -38,4 +38,22 @@ describe.skipIf(!configured)('e2e: payouts', () => {
       await eventually(async () => expect(await eventsFor(escrow, 'payout.failed')).toHaveLength(1))
     },
   )
+
+  it.skipIf(!served('payout_accounts'))(
+    "[E2E-040] banks are listed, and a payout account shows in the customer's list until deleted",
+    async () => {
+      const k = ketapay()
+      const { seller } = people()
+      expect((await k.banks.list()).data.length).toBeGreaterThan(0)
+      const customerToken = await tokenFor(seller.email)
+      const account = await k.payoutAccounts.create(
+        { bank_code: '057', account_number: '0000000000' },
+        { customerToken },
+      )
+      const ids = async () => (await k.payoutAccounts.list({ customerToken })).data.map((a) => a.id)
+      expect(await ids()).toContain(account.id)
+      await k.payoutAccounts.del(account.id, { customerToken })
+      expect(await ids()).not.toContain(account.id)
+    },
+  )
 })

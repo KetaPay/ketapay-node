@@ -11,9 +11,6 @@ export type ApiFeature =
   | 'milestone_payout' // milestone.payout and milestone.refund
 
 const NOT_SERVED_YET: ApiFeature[] = [
-  'bank_transfer',
-  'chargebacks',
-  'payout_accounts',
   'milestone_payout', // always null for now
 ]
 
