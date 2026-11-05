@@ -1,14 +1,19 @@
 // Test data. Every call returns fresh people, so tests never share state and can run in any order.
+import { randomUUID } from 'node:crypto'
 import type { CheckoutSessionCreateParams } from '../../../src/index.js'
 import { RUN_ID } from './env.js'
 
+// Vitest loads this module once per test file, so the counter restarts in each file while CI's
+// RUN_ID stays the same. The file id keeps people from two files from being the same account.
+const FILE_ID = randomUUID().slice(0, 8)
 let counter = 0
 
 export function people() {
   counter++
+  const id = `${RUN_ID}-${FILE_ID}-${counter}`
   return {
-    buyer: { email: `buyer+${RUN_ID}-${counter}@e2e.ketapay.test`, name: 'E2E Buyer' },
-    seller: { email: `seller+${RUN_ID}-${counter}@e2e.ketapay.test`, name: 'E2E Seller' },
+    buyer: { email: `buyer+${id}@e2e.ketapay.test`, name: 'E2E Buyer' },
+    seller: { email: `seller+${id}@e2e.ketapay.test`, name: 'E2E Seller' },
   }
 }
 
