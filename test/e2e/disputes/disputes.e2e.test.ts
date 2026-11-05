@@ -14,7 +14,12 @@ describe.skipIf(!configured)('e2e: disputes', () => {
       const k = ketapay()
       const buyerToken = await tokenFor(buyer)
       const file = await k.files.create(
-        { file: new TextEncoder().encode('evidence'), filename: 'evidence.txt', purpose: 'dispute_evidence' },
+        {
+          file: new TextEncoder().encode('%PDF-1.4 evidence'),
+          filename: 'evidence.pdf',
+          contentType: 'application/pdf',
+          purpose: 'dispute_evidence',
+        },
         { customerToken: buyerToken },
       )
       const dispute = await k.disputes.create(
