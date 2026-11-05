@@ -20,7 +20,9 @@ describe.skipIf(!configured)('e2e: checkout sessions', () => {
     expect(session.milestones).toHaveLength(2)
     expect(session.images).toHaveLength(1)
     expect(session.fees.buyer_total).toBe(session.fees.amount + session.fees.buyer_fee + session.fees.buyer_vat)
-    expect(session.fees.seller_payout).toBe(session.fees.amount - session.fees.seller_fee - session.fees.commission)
+    expect(session.fees.seller_payout).toBe(
+      session.fees.amount - session.fees.seller_fee - session.fees.seller_vat - session.fees.commission,
+    )
   })
 
   it.skipIf(!served('bank_transfer'))(

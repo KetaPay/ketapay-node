@@ -54,6 +54,7 @@ describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', ()
     expect((await k.escrows.list({ status: 'active', limit: 10 })).object).toBe('list')
     expect((await k.events.list({ type: 'escrow.funded' })).object).toBe('list')
     expect((await k.banks.list()).object).toBe('list')
+    expect((await k.pricing.retrieve()).object).toBe('pricing')
   })
 
   it('runs the customer flow', async () => {
