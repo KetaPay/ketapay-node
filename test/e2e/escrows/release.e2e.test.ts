@@ -41,13 +41,4 @@ describe.skipIf(!configured)('e2e: releasing milestones', () => {
       expect(released.milestones[0]!.status).toBe('released')
     },
   )
-
-  it.skipIf(!served('simulate'))('[E2E-007] auto-releases a delivered milestone when the window runs out', async () => {
-    const { escrow } = await fundedEscrow({ release: { method: 'buyer_confirms', auto_release_hours: 48 } })
-    const k = ketapay()
-    const m = first(escrow)
-    await k.testHelpers.escrows.simulate(escrow.id, { action: 'deliver', milestone_id: m.id })
-    const after = await k.testHelpers.escrows.simulate(escrow.id, { action: 'auto_release', milestone_id: m.id })
-    expect(after.milestones[0]!.status).toBe('released')
-  })
 })

@@ -28,7 +28,7 @@ describe('test helpers', () => {
   it('[SEC-005] fail at once with a live key, without contacting KetaPay', async () => {
     const { fetch, calls } = mockFetch({ body: {} })
     const live = client(fetch, { apiKey: 'sk_live_x' })
-    const err = await live.testHelpers.escrows.simulate('e1', { action: 'deliver' }).catch((e: unknown) => e)
+    const err = await live.testHelpers.checkoutSessions.pay('cs1').catch((e: unknown) => e)
     expect(err).toBeInstanceOf(InvalidRequestError)
     expect(err).toMatchObject({ code: 'test_mode_only' })
     await expect(live.testHelpers.checkoutSessions.pay('cs1').withResponse()).rejects.toMatchObject({
