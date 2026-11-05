@@ -41,4 +41,21 @@ describe.skipIf(!configured)('e2e: releasing milestones', () => {
       expect(released.milestones[0]!.status).toBe('released')
     },
   )
+
+  it('[E2E-039] the buyer asks for changes: the milestone is funded again and can be delivered again', async () => {
+    const { escrow, buyer, seller } = await fundedEscrow()
+    const k = ketapay()
+    const m = first(escrow)
+    const sellerToken = { customerToken: await tokenFor(seller) }
+    await k.escrows.milestones.deliver(escrow.id, m.id, { note: 'Designs ready' }, sellerToken)
+    const changed = await k.escrows.milestones.requestChanges(
+      escrow.id,
+      m.id,
+      { note: 'The logo is missing from the designs.' },
+      { customerToken: await tokenFor(buyer) },
+    )
+    expect(changed.milestones[0]!.status).toBe('funded')
+    const again = await k.escrows.milestones.deliver(escrow.id, m.id, { note: 'Logo added' }, sellerToken)
+    expect(again.milestones[0]!.status).toBe('delivered')
+  })
 })

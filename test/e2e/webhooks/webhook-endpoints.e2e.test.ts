@@ -18,3 +18,20 @@ describe.skipIf(!configured || !env.webhookUrl)('e2e: webhook endpoints', () => 
     }
   })
 })
+
+describe.skipIf(!configured)('e2e: webhook endpoint settings', () => {
+  it('[E2E-041] an endpoint shows in the list, and an update changes its events', async () => {
+    const k = ketapay()
+    const endpoint = await k.webhookEndpoints.create({
+      url: 'https://example.com/ketapay-e2e-webhook',
+      enabled_events: ['escrow.funded'],
+    })
+    try {
+      expect((await k.webhookEndpoints.list({ limit: 100 })).data.map((e) => e.id)).toContain(endpoint.id)
+      const updated = await k.webhookEndpoints.update(endpoint.id, { enabled_events: ['escrow.refunded'] })
+      expect(updated.enabled_events).toEqual(['escrow.refunded'])
+    } finally {
+      await k.webhookEndpoints.del(endpoint.id)
+    }
+  })
+})

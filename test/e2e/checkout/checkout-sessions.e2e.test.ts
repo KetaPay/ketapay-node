@@ -1,7 +1,8 @@
+import { randomUUID } from 'node:crypto'
 import { describe, expect, it } from 'vitest'
-import { InvalidRequestError, PermissionError } from '../../../src/index.js'
+import { ConflictError, InvalidRequestError, PermissionError } from '../../../src/index.js'
 import { ketapay } from '../support/client.js'
-import { configured } from '../support/env.js'
+import { configured, RUN_ID } from '../support/env.js'
 import { people, sessionParams } from '../support/fixtures.js'
 import { tokenFor } from '../support/flows.js'
 import { served } from '../support/served.js'
@@ -54,5 +55,32 @@ describe.skipIf(!configured)('e2e: checkout sessions', () => {
       expect(err, param).toBeInstanceOf(InvalidRequestError)
       expect((err as InvalidRequestError).param ?? '', param).toContain(param)
     }
+  })
+
+  async function refusedAndNotCreated(amount: number, code: string) {
+    const k = ketapay()
+    const title = `E2E limit ${code} ${RUN_ID}-${randomUUID().slice(0, 8)}`
+    const refused = k.checkoutSessions.create(
+      sessionParams(people(), { amount, title, milestones: [{ title: 'All of it', amount }] }),
+    )
+    await expect(refused).rejects.toMatchObject({ code })
+    expect((await k.checkoutSessions.list({ limit: 20 })).data.map((s) => s.title)).not.toContain(title)
+  }
+
+  it("[E2E-032] refuses a session below the plan's minimum, and none is created", async () => {
+    await refusedAndNotCreated(199_900, 'amount_too_small')
+  })
+
+  it("[E2E-033] refuses a session above the plan's maximum, and none is created", async () => {
+    await refusedAndNotCreated(5_000_000_100, 'amount_requires_custom_rate')
+  })
+
+  it('[E2E-038] a session reads back by id, and an open one can be cancelled once', async () => {
+    const k = ketapay()
+    const session = await k.checkoutSessions.create(sessionParams())
+    expect((await k.checkoutSessions.retrieve(session.id)).id).toBe(session.id)
+    const cancelled = await k.checkoutSessions.cancel(session.id)
+    expect(cancelled.status).toBe('cancelled')
+    await expect(k.checkoutSessions.cancel(session.id)).rejects.toBeInstanceOf(ConflictError)
   })
 })
