@@ -7,6 +7,7 @@ import { MoneyActions } from './resources/money-actions/index.js'
 import { Escrows } from './resources/escrows/index.js'
 import { Files } from './resources/files/index.js'
 import { Banks, PayoutAccounts } from './resources/payouts/index.js'
+import { PricingResource } from './resources/pricing/index.js'
 import { TestHelpers } from './resources/test-helpers/index.js'
 import { Events, generateTestSignatureHeader, verifyWebhook, WebhookEndpoints } from './resources/webhooks/index.js'
 
@@ -25,6 +26,8 @@ export class KetaPay {
   // Payouts
   readonly payoutAccounts: PayoutAccounts
   readonly banks: Banks
+  // Pricing
+  readonly pricing: PricingResource
   // Files
   readonly files: Files
   // Webhooks
@@ -55,6 +58,7 @@ export class KetaPay {
     this.chargebacks = new Chargebacks(http)
     this.payoutAccounts = new PayoutAccounts(http)
     this.banks = new Banks(http)
+    this.pricing = new PricingResource(http)
     this.files = new Files(http)
     this.webhookEndpoints = new WebhookEndpoints(http)
     this.events = new Events(http)

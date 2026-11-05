@@ -50,6 +50,8 @@ const calls: Record<string, Call> = {
   listEscrowChargebacks: (k) => k.chargebacks.listForEscrow(ids.id),
   getChargeback: (k) => k.chargebacks.retrieve(ids.id),
   submitChargebackEvidence: (k) => k.chargebacks.submitEvidence(ids.id, { statement: 'Courier receipt' }, t),
+  // Pricing
+  retrievePricing: (k) => k.pricing.retrieve(),
   // Files
   uploadFile: (k) => k.files.create({ file: new Uint8Array([1]), filename: 'a.pdf', purpose: 'delivery' }),
   // Payouts

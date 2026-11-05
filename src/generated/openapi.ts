@@ -48,9 +48,16 @@ export interface paths {
      *     never send the seller's bank details: the seller adds them, with their own one-time
      *     code, on KetaPay's pages or through `POST /payout_accounts`.
      *
-     *     **Fees.** The buyer pays the amount plus KetaPay's fee and VAT on that fee. The seller's
-     *     fee and your commission come out of each release. Nothing is charged to the seller or
-     *     earned by you on money refunded to the buyer. The response shows every figure in `fees`.
+     *     **Fees.** KetaPay charges one fee per escrow, at the rate `GET /pricing` returns, with VAT
+     *     on it. Your fee setting decides who pays: the buyer (with the amount), the seller (from
+     *     each release), half each, or your platform (from its commission, which must cover the
+     *     fee and VAT: `commission_below_fee`). Once the buyer has paid, the fee is kept even if the
+     *     escrow is refunded: the share the seller side carries comes out of your balance, which can
+     *     go below zero until your next earnings pay it off. The response shows every figure in `fees`.
+     *
+     *     **Escrow size.** Below your rate's `min_amount` the request fails with `amount_too_small`;
+     *     above its `max_amount` (₦50m on the rate cards) it fails with `amount_requires_custom_rate`
+     *     until KetaPay agrees a rate for it with you.
      *
      *     **Limits.** Amounts above the buyer's verification level are allowed here; the buyer is
      *     asked to verify their identity before paying (the hosted checkout does this for you).
@@ -346,8 +353,11 @@ export interface paths {
     /**
      * Refund an escrow
      * @description Refunds the buyer on a sale your business made itself, with your key alone. Everything
-     *     KetaPay still holds on the escrow goes back; milestones already released stay paid, and
-     *     the buyer's fee and its VAT are kept. Partial refunds aren't supported.
+     *     KetaPay still holds on the escrow goes back; milestones already released stay paid.
+     *     KetaPay's fee and its VAT are kept once the buyer has paid: what the buyer paid isn't
+     *     returned, and the share you carry (your fee setting) comes out of your balance, which can
+     *     go below zero. Your next earnings pay that off, and you can't withdraw until they have.
+     *     Partial refunds aren't supported.
      *
      *     Needs a key with the `escrows:manage` scope, which is never added to an existing key and
      *     has to be chosen when the key is made. Refused while the escrow has an open dispute
@@ -638,6 +648,28 @@ export interface paths {
      * @description Every bank and microfinance bank a payout can go to, sorted by name. Not paginated.
      */
     get: operations['listBanks']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/pricing': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * Retrieve your pricing
+     * @description The rate your next escrow is priced on: the fee (percentage plus a fixed part, once per
+     *     escrow), VAT, who pays it, and the escrow sizes it covers. Every escrow keeps the rate it
+     *     was created on, shown in its `fees.rate`.
+     */
+    get: operations['retrievePricing']
     put?: never
     post?: never
     delete?: never
@@ -1347,7 +1379,7 @@ export interface components {
         /**
          * @description Specific reason. Known codes: `parameter_missing`, `parameter_invalid`,
          *     `contact_required`, `party_identity_conflict`, `parties_must_differ`, `milestones_total_mismatch`, `commission_exceeds_contract`,
-         *     `commission_not_allowed`,
+         *     `commission_not_allowed`, `commission_below_fee`, `amount_too_small`, `amount_requires_custom_rate`,
          *     `release_settings_invalid`, `verification_required`, `checkout_session_not_open`,
          *     `payment_method_not_allowed`, `transfer_not_available`,
          *     `escrow_already_flagged`, `escrow_state_invalid`, `milestone_not_current`,
@@ -1514,42 +1546,62 @@ export interface components {
      */
     CheckoutSessionStatus: 'open' | 'complete' | 'expired' | 'cancelled'
     /**
-     * @description Totals for the whole escrow, in kobo. `buyer_total = amount + buyer_fee + buyer_vat` and
-     *     `seller_payout = amount - seller_fee - commission`. Until everything is released these
-     *     are what will apply; each milestone shows its own share.
+     * @description Totals for the whole escrow, in kobo. KetaPay charges one fee per escrow, `rate.fee_bps` of
+     *     the amount plus `rate.fee_flat`, with VAT at `rate.vat_bps` on the fee. Who pays it is your
+     *     fee setting: the buyer, the seller, split in half (the buyer's half takes the odd kobo), or
+     *     your platform out of its commission. `buyer_total = amount + buyer_fee + buyer_vat` and
+     *     `seller_payout = amount - seller_fee - seller_vat - commission`. Until everything is released
+     *     these are what will apply; each milestone shows its own share, and the flat part is charged
+     *     once per escrow, not per milestone.
      */
     Fees: {
       amount: components['schemas']['Amount']
       /**
-       * @description KetaPay's fee paid by the buyer (1.5%)
-       * @example 2250000
+       * @description The buyer's share of KetaPay's fee, charged with the amount
+       * @example 1320000
        */
       buyer_fee: components['schemas']['Amount']
       /**
-       * @description 7.5% VAT on `buyer_fee`
-       * @example 168750
+       * @description VAT on `buyer_fee`
+       * @example 99000
        */
       buyer_vat: components['schemas']['Amount']
       /**
        * @description What the buyer is charged
-       * @example 152418750
+       * @example 151419000
        */
       buyer_total: components['schemas']['Amount']
       /**
-       * @description KetaPay's fee taken from the seller's payouts (1.5%)
-       * @example 2250000
+       * @description The seller's share of KetaPay's fee, taken from the seller's payouts
+       * @example 1320000
        */
       seller_fee: components['schemas']['Amount']
       /**
-       * @description Your commission
+       * @description VAT on `seller_fee`
+       * @example 99000
+       */
+      seller_vat: components['schemas']['Amount']
+      /**
+       * @description When your platform pays the fee, all of it, taken from your commission at release. Otherwise 0.
+       * @example 0
+       */
+      platform_fee: components['schemas']['Amount']
+      /**
+       * @description VAT on `platform_fee`
+       * @example 0
+       */
+      platform_vat: components['schemas']['Amount']
+      /**
+       * @description Your commission, before `platform_fee` and `platform_vat` come out of it
        * @example 15000000
        */
       commission: components['schemas']['Amount']
       /**
        * @description What the seller receives once everything is released
-       * @example 132750000
+       * @example 133581000
        */
       seller_payout: components['schemas']['Amount']
+      rate: components['schemas']['Rate']
     }
     CheckoutSession: {
       /** Format: uuid */
@@ -1752,7 +1804,10 @@ export interface components {
        * @description When the buyer's inspection period ends for this delivery. Null unless it is `delivered`. Nothing releases then; the seller may escalate with a `buyer_unresponsive` dispute.
        */
       inspection_ends_at: string | null
+      /** @description This milestone's share of the seller's fee */
       seller_fee: components['schemas']['Amount']
+      /** @description VAT on this milestone's `seller_fee` */
+      seller_vat: components['schemas']['Amount']
       /** @description Your share from this milestone's release */
       commission: components['schemas']['Amount']
       seller_payout: components['schemas']['Amount']
@@ -2136,6 +2191,80 @@ export interface components {
       name: string
       /** Format: uri */
       logo_url: string | null
+    }
+    /**
+     * @description The rate your next escrow is priced on. Your rate each month follows your completed volume
+     *     through KetaPay in the previous calendar month; a launch partner or negotiated rate replaces
+     *     the standard one until `ends_at`. Show these figures to your users instead of writing the
+     *     rate into your site or app.
+     */
+    Pricing: {
+      /** @constant */
+      object: 'pricing'
+      /** @example platform_launch */
+      plan: string
+      /** @example Platform launch partner */
+      name: string
+      /**
+       * @description `standard`: the public rate card. `launch`: the launch partner rate. `custom`: a rate agreed with you.
+       * @enum {string}
+       */
+      kind: 'standard' | 'launch' | 'custom'
+      /**
+       * @description The percentage part of the fee, in basis points
+       * @example 150
+       */
+      fee_bps: number
+      /**
+       * @description The fixed part of the fee, once per escrow
+       * @example 15000
+       */
+      fee_flat: components['schemas']['Amount']
+      /** @example 750 */
+      vat_bps: number
+      /**
+       * @description Who pays the fee on your escrows, set in your dashboard. `platform` is for platforms, paid out of your commission.
+       * @enum {string}
+       */
+      fees_paid_by: 'split' | 'buyer' | 'seller' | 'platform'
+      /**
+       * @description The smallest escrow you can create (`amount_too_small` below it)
+       * @example 0
+       */
+      min_amount: components['schemas']['Amount']
+      /**
+       * @description The largest escrow your rate covers, in kobo (`amount_requires_custom_rate` above it). Null for no limit.
+       * @example 5000000000
+       */
+      max_amount: number | null
+      /**
+       * Format: date-time
+       * @description When a launch partner or negotiated rate ends and your standard rate applies again. Null on the standard rate.
+       */
+      ends_at: string | null
+    }
+    /** @description The pricing plan the escrow is priced on. One fee per escrow, `fee_bps` of the amount plus `fee_flat`. */
+    Rate: {
+      /**
+       * @description The pricing plan's code
+       * @example platform
+       */
+      plan: string
+      /**
+       * @description The percentage part of the fee, in basis points (175 = 1.75%)
+       * @example 175
+       */
+      fee_bps: number
+      /**
+       * @description The fixed part of the fee, once per escrow
+       * @example 15000
+       */
+      fee_flat: components['schemas']['Amount']
+      /**
+       * @description VAT on the fee, in basis points
+       * @example 750
+       */
+      vat_bps: number
     }
     CreatePayoutAccountRequest: {
       /** @description From `GET /banks` */
@@ -3445,6 +3574,28 @@ export interface operations {
             object: 'list'
             data: components['schemas']['Bank'][]
           }
+        }
+      }
+      401: components['responses']['Unauthenticated']
+      429: components['responses']['RateLimited']
+    }
+  }
+  retrievePricing: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Your pricing */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Pricing']
         }
       }
       401: components['responses']['Unauthenticated']
