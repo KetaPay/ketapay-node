@@ -1,7 +1,13 @@
 import type { APIPromise } from '../../core/api-promise.js'
 import type { CustomerRequestOptions, RequestOptions } from '../../core/options.js'
 import { Resource, seg } from '../../core/resource.js'
-import type { Escrow, MilestoneDeliverParams, MilestoneReleaseParams, ReleaseCode } from './types.js'
+import type {
+  Escrow,
+  MilestoneDeliverParams,
+  MilestoneReleaseParams,
+  MilestoneRequestChangesParams,
+  ReleaseCode,
+} from './types.js'
 
 const path = (escrowId: string, milestoneId: string) => `/escrows/${seg(escrowId)}/milestones/${seg(milestoneId)}`
 
@@ -17,6 +23,19 @@ export class Milestones extends Resource {
     options?: RequestOptions,
   ): APIPromise<Escrow> {
     return this.http.request('POST', `${path(escrowId, milestoneId)}/deliver`, { body: params, options })
+  }
+
+  /**
+   * The buyer sends a delivered milestone back to the seller with what is missing. It is in
+   * progress again and its inspection period stops. Needs the buyer's customer token.
+   */
+  requestChanges(
+    escrowId: string,
+    milestoneId: string,
+    params: MilestoneRequestChangesParams,
+    options: CustomerRequestOptions,
+  ): APIPromise<Escrow> {
+    return this.http.request('POST', `${path(escrowId, milestoneId)}/request_changes`, { body: params, options })
   }
 
   /**

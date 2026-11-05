@@ -17,16 +17,24 @@ describe.skipIf(!configured)('e2e: payouts', () => {
     expect(active.status).toBe('active')
   })
 
-  it.skipIf(!served('simulate', 'milestone_payout'))(
-    "[E2E-012] a failed payout records payout.failed and keeps the money in the seller's balance",
+  it.skipIf(!served('payout_accounts', 'milestone_payout'))(
+    "[E2E-012] a payout to the failing test account records payout.failed and keeps the money in the seller's balance",
     async () => {
-      const { escrow } = await fundedEscrow()
+      const { escrow, buyer, seller } = await fundedEscrow()
       const k = ketapay()
       const m = first(escrow)
-      await k.testHelpers.escrows.simulate(escrow.id, { action: 'deliver', milestone_id: m.id })
-      await k.testHelpers.escrows.simulate(escrow.id, { action: 'release', milestone_id: m.id })
-      const after = await k.testHelpers.escrows.simulate(escrow.id, { action: 'fail_payout', milestone_id: m.id })
-      expect(after.milestones[0]!.payout?.status).toBe('failed')
+      const sellerToken = await tokenFor(seller)
+      // 0000000001 is the sandbox account whose transfers always fail
+      const pending = await k.payoutAccounts.create(
+        { bank_code: '057', account_number: '0000000001' },
+        { customerToken: sellerToken },
+      )
+      await k.payoutAccounts.confirm(pending.id, SANDBOX_CODE, { customerToken: sellerToken })
+      await k.escrows.milestones.deliver(escrow.id, m.id, { note: 'Done' }, { customerToken: sellerToken })
+      await k.escrows.milestones.release(escrow.id, m.id, {}, { customerToken: await tokenFor(buyer) })
+      await eventually(async () =>
+        expect((await k.escrows.retrieve(escrow.id)).milestones[0]!.payout?.status).toBe('failed'),
+      )
       await eventually(async () => expect(await eventsFor(escrow, 'payout.failed')).toHaveLength(1))
     },
   )

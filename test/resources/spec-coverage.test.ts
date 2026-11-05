@@ -35,6 +35,7 @@ const calls: Record<string, Call> = {
   refundEscrow: (k) => k.escrows.refund(ids.id, { reason: 'Out of stock, agreed by phone' }),
   getMoneyAction: (k) => k.moneyActions.retrieve(ids.id),
   deliverMilestone: (k) => k.escrows.milestones.deliver(ids.id, ids.milestone_id, {}, t),
+  requestMilestoneChanges: (k) => k.escrows.milestones.requestChanges(ids.id, ids.milestone_id, { note: 'More' }, t),
   releaseMilestone: (k) => k.escrows.milestones.release(ids.id, ids.milestone_id, { release_code: '123456' }),
   getMilestoneReleaseCode: (k) => k.escrows.milestones.releaseCode(ids.id, ids.milestone_id, t),
   // Disputes and chargebacks
@@ -70,7 +71,6 @@ const calls: Record<string, Call> = {
   getEvent: (k) => k.events.retrieve(ids.id),
   // Sandbox
   testPayCheckoutSession: (k) => k.testHelpers.checkoutSessions.pay(ids.id),
-  testSimulateEscrow: (k) => k.testHelpers.escrows.simulate(ids.id, { action: 'deliver' }),
 }
 
 /** operationId -> method and path, read from the spec snapshot. */

@@ -8,14 +8,12 @@ export type ApiFeature =
   | 'chargebacks' // /escrows/{id}/chargebacks, /chargebacks/*
   | 'files' // POST /files
   | 'payout_accounts' // /banks, /payout_accounts/*
-  | 'simulate' // POST /test_helpers/escrows/{id}/simulate
   | 'milestone_payout' // milestone.payout and milestone.refund
 
 const NOT_SERVED_YET: ApiFeature[] = [
   'bank_transfer',
   'chargebacks',
   'payout_accounts',
-  'simulate',
   'milestone_payout', // always null for now
 ]
 

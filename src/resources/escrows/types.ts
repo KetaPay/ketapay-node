@@ -17,3 +17,4 @@ export type MilestoneDeliverParams = Omit<Schemas['DeliverMilestoneRequest'], 'a
   attachments?: AttachmentInput[]
 }
 export type MilestoneReleaseParams = Schemas['ReleaseMilestoneRequest']
+export type MilestoneRequestChangesParams = Schemas['RequestChangesRequest']

@@ -30,7 +30,7 @@ describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', ()
       ],
       buyer: { email: 'ada@example.com', phone: '+2348012345678' },
       seller: { email: 'tunde@example.com' },
-      release: { method: 'buyer_confirms', auto_release_hours: 168 },
+      release: { method: 'buyer_confirms', inspection_hours: 72 },
       commission: { rate_bps: 1000 },
       external_reference: 'proj_4471',
     })
@@ -61,6 +61,7 @@ describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', ()
     await k.customerSessions.verify(ids.session, '123456')
     await k.checkoutSessions.bankTransfer(ids.session, customer)
     await k.escrows.milestones.deliver(ids.escrow, ids.milestone, { note: 'Designs ready' }, customer)
+    await k.escrows.milestones.requestChanges(ids.escrow, ids.milestone, { note: 'Darker purple' }, customer)
     await k.escrows.milestones.release(ids.escrow, ids.milestone, {}, customer)
     await k.escrows.milestones.release(ids.escrow, ids.milestone, { release_code: '731045' })
     await k.escrows.milestones.releaseCode(ids.escrow, ids.milestone, customer)
@@ -98,6 +99,5 @@ describe.skipIf(!baseUrl)('[SPEC-003] contract: SDK requests match the spec', ()
 
   it('drives the sandbox', async () => {
     await k.testHelpers.checkoutSessions.pay(ids.session, { method: 'card' })
-    await k.testHelpers.escrows.simulate(ids.escrow, { action: 'deliver', milestone_id: ids.milestone })
   })
 })

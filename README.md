@@ -4,7 +4,7 @@ Server-side library for the [KetaPay API](https://docs.ketapay.com): put escrow 
 
 > Beta. The API is in design partner testing and may still change.
 >
-> Coming soon: the library already has these calls, but the API doesn't serve them yet (they answer 404): `checkoutSessions.bankTransfer`, `escrows.cancel`, `escrows.milestones.releaseCode`, `disputes`, `chargebacks`, `files`, `banks`, `payoutAccounts` and `testHelpers.escrows.simulate`. A milestone's `payout` and `refund` are `null` for now.
+> Coming soon: the library already has these calls, but the API doesn't serve them yet (they answer 404): `checkoutSessions.bankTransfer`, `escrows.cancel`, `escrows.milestones.releaseCode`, `disputes`, `chargebacks`, `files`, `banks` and `payoutAccounts`. A milestone's `payout` and `refund` are `null` for now.
 
 ## Install
 
@@ -49,7 +49,7 @@ await ketapay.checkoutSessions.create({
   ],
   buyer: { email: 'ada@example.com' },
   seller: { email: 'tunde@example.com' },
-  release: { method: 'buyer_confirms', auto_release_hours: 168 },
+  release: { method: 'buyer_confirms', inspection_hours: 72 },
   commission: { rate_bps: 1000 }, // your 10% cut, from the seller's side of each release
 })
 ```
@@ -145,11 +145,11 @@ new KetaPay({ apiKey, logLevel: 'debug', logger: pino() })
 
 ## Sandbox
 
-With an `sk_test_` key, no messages are sent, every one-time code is `123456`, and you can move escrows through any state:
+With an `sk_test_` key, no messages are sent, every one-time code is `123456`, and you can pay a session from code. Move the escrow on by acting as the buyer and seller with their customer tokens, and send a test event for anything only KetaPay or a bank can cause:
 
 ```ts
 await ketapay.testHelpers.checkoutSessions.pay(session.id)
-await ketapay.testHelpers.escrows.simulate(escrowId, { action: 'deliver', milestone_id: milestoneId })
+await ketapay.webhookEndpoints.test(endpointId, 'dispute.resolved')
 ```
 
 Building a library on top of this one? Identify it with `appInfo: { name: 'my-plugin', version: '1.2.0' }`: it's added to the User-Agent, so KetaPay support can see which integration made a call.
