@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.0-beta.6](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.5...v0.1.0-beta.6) (2026-11-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* add pricing.retrieve and the new fee fields (ENG-614) ([#45](https://github.com/KetaPay/ketapay-node/issues/45))
+* drop testHelpers.escrows.simulate, add milestones.requestChanges ([#42](https://github.com/KetaPay/ketapay-node/issues/42))
+
+### Features
+
+* add pricing.retrieve and the new fee fields (ENG-614) ([#45](https://github.com/KetaPay/ketapay-node/issues/45)) ([3bb032d](https://github.com/KetaPay/ketapay-node/commit/3bb032dfb3456137b1d607a4801c4eabc67ceb57))
+* drop testHelpers.escrows.simulate, add milestones.requestChanges ([#42](https://github.com/KetaPay/ketapay-node/issues/42)) ([685f225](https://github.com/KetaPay/ketapay-node/commit/685f225f865b4086ca07ea896c4788c3308a5e0e))
+
 ## [0.1.0-beta.5](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.4...v0.1.0-beta.5) (2026-10-31)
 
 
