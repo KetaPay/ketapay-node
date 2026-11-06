@@ -99,7 +99,7 @@ test/e2e/
 - Every test builds its own data with fresh people from `fixtures`, so tests never depend on each other. Everything created is stamped with the run id (`metadata.e2e_run`) so staging can be cleaned up by run.
 - Wait for asynchronous effects (events, payouts, refunds) with `eventually()`, never with a fixed sleep.
 - Settings: `KETAPAY_E2E_BASE_URL` and `KETAPAY_E2E_SECRET_KEY`, plus optional ones listed in `support/env.ts`. Run locally with `npm run test:e2e`; it uses `vitest.e2e.config.ts` (60-second timeouts, one retry, files one at a time).
-- The **E2E** workflow runs on every merge to `main`, nightly and by hand, reading the settings from Infisical (`ketapay-sdks`, staging: one project shared by every KetaPay SDK); until they exist it reports "not configured" and passes. **Publish to npm** runs it on the release tag and refuses a stable (non-beta) release unless it ran and passed.
+- The **E2E** workflow runs on every merge to `main`, on pull requests that change the SDK or spec, nightly and by hand, reading the settings from Infisical (`ketapay-sdks`, staging: one project shared by every KetaPay SDK); until they exist it reports "not configured" and passes. **Publish to npm** runs it on the release tag and refuses a stable (non-beta) release unless it ran and passed.
 
 ## Supported runtimes
 
