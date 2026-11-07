@@ -10,9 +10,7 @@ export type ApiFeature =
   | 'payout_accounts' // /banks, /payout_accounts/*
   | 'milestone_payout' // milestone.payout and milestone.refund
 
-const NOT_SERVED_YET: ApiFeature[] = [
-  'milestone_payout', // always null for now
-]
+const NOT_SERVED_YET: ApiFeature[] = []
 
 /** True when the API serves every feature listed. */
 export const served = (...features: ApiFeature[]) => features.every((f) => !NOT_SERVED_YET.includes(f))
