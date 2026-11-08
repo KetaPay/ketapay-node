@@ -6,6 +6,9 @@ import { eventsFor, first, fundedEscrow, tokenFor } from '../support/flows.js'
 import { eventually } from '../support/wait.js'
 import { served } from '../support/served.js'
 
+// One run of the payout worker (every minute on staging), with room to spare
+const PAYOUT_WORKER_WAIT = { timeoutMs: 90_000, intervalMs: 2_000 }
+
 describe.skipIf(!configured)('e2e: payouts', () => {
   it.skipIf(!served('payout_accounts'))('[E2E-014] adds a payout account and confirms it with the code', async () => {
     const { seller } = people()
@@ -24,6 +27,8 @@ describe.skipIf(!configured)('e2e: payouts', () => {
       const k = ketapay()
       const m = first(escrow)
       const sellerToken = await tokenFor(seller)
+      // A platform's seller is paid once verified; unverified, the payout would wait
+      await k.testHelpers.customers.verify({ customerToken: sellerToken })
       // 0000000001 is the sandbox account whose transfers always fail
       const pending = await k.payoutAccounts.create(
         { bank_code: '057', account_number: '0000000001' },
@@ -32,10 +37,94 @@ describe.skipIf(!configured)('e2e: payouts', () => {
       await k.payoutAccounts.confirm(pending.id, SANDBOX_CODE, { customerToken: sellerToken })
       await k.escrows.milestones.deliver(escrow.id, m.id, { note: 'Done' }, { customerToken: sellerToken })
       await k.escrows.milestones.release(escrow.id, m.id, {}, { customerToken: await tokenFor(buyer) })
-      await eventually(async () =>
-        expect((await k.escrows.retrieve(escrow.id)).milestones[0]!.payout?.status).toBe('failed'),
+      // The release only queues the payout: the API's payout worker sends it once a minute
+      await eventually(
+        async () => expect((await k.escrows.retrieve(escrow.id)).milestones[0]!.payout?.status).toBe('failed'),
+        PAYOUT_WORKER_WAIT,
       )
       await eventually(async () => expect(await eventsFor(escrow, 'payout.failed')).toHaveLength(1))
+    },
+    PAYOUT_WORKER_WAIT.timeoutMs + 60_000,
+  )
+
+  it.skipIf(!served('payout_accounts', 'milestone_payout'))(
+    "[E2E-043] an unverified seller's payout waits for verification, then goes out with payout.sent",
+    async () => {
+      const { escrow, buyer, seller } = await fundedEscrow()
+      const k = ketapay()
+      const m = first(escrow)
+      const sellerToken = await tokenFor(seller)
+      const pending = await k.payoutAccounts.create(
+        { bank_code: '057', account_number: '0000000000' },
+        { customerToken: sellerToken },
+      )
+      await k.payoutAccounts.confirm(pending.id, SANDBOX_CODE, { customerToken: sellerToken })
+      await k.escrows.milestones.deliver(escrow.id, m.id, { note: 'Done' }, { customerToken: sellerToken })
+      await k.escrows.milestones.release(escrow.id, m.id, {}, { customerToken: await tokenFor(buyer) })
+      const held = (await k.escrows.retrieve(escrow.id)).milestones[0]!.payout
+      expect(held?.status).toBe('awaiting_verification')
+
+      await k.testHelpers.customers.verify({ customerToken: sellerToken })
+      await eventually(
+        async () => expect((await k.escrows.retrieve(escrow.id)).milestones[0]!.payout?.status).toBe('sent'),
+        PAYOUT_WORKER_WAIT,
+      )
+      await eventually(async () => expect(await eventsFor(escrow, 'payout.sent')).toHaveLength(1))
+    },
+    PAYOUT_WORKER_WAIT.timeoutMs + 60_000,
+  )
+
+  it.skipIf(!served('payout_accounts', 'milestone_payout'))(
+    "[E2E-044] a held payout's verification_url is the seller's /verify/ page, gone once they are verified",
+    async () => {
+      const { escrow, buyer, seller } = await fundedEscrow()
+      const k = ketapay()
+      const m = first(escrow)
+      const sellerToken = await tokenFor(seller)
+      const pending = await k.payoutAccounts.create(
+        { bank_code: '057', account_number: '0000000000' },
+        { customerToken: sellerToken },
+      )
+      await k.payoutAccounts.confirm(pending.id, SANDBOX_CODE, { customerToken: sellerToken })
+      await k.escrows.milestones.deliver(escrow.id, m.id, { note: 'Done' }, { customerToken: sellerToken })
+      await k.escrows.milestones.release(escrow.id, m.id, {}, { customerToken: await tokenFor(buyer) })
+      const held = (await k.escrows.retrieve(escrow.id)).milestones[0]!.payout
+      expect(held?.status).toBe('awaiting_verification')
+      expect(held?.verification_url).toMatch(/^https?:\/\/[^/]+\/verify\/t_/)
+
+      await k.testHelpers.customers.verify({ customerToken: sellerToken })
+      await eventually(async () => {
+        const payout = (await k.escrows.retrieve(escrow.id)).milestones[0]!.payout
+        expect([payout?.status, payout?.verification_url]).toEqual(['sent', null])
+      }, PAYOUT_WORKER_WAIT)
+    },
+    PAYOUT_WORKER_WAIT.timeoutMs + 60_000,
+  )
+
+  it.skipIf(!served('payout_accounts'))(
+    '[E2E-045] a verification link for a seller is their /verify/ page with the return URLs, for about a day',
+    async () => {
+      const k = ketapay()
+      const customerToken = await tokenFor(people().seller.email)
+      const link = await k.verificationLinks.create(
+        { return_url: 'https://example.com/seller/done', refresh_url: 'https://example.com/seller/again' },
+        { customerToken },
+      )
+      expect(link.object).toBe('verification_link')
+      expect(link.livemode).toBe(false)
+      const url = new URL(link.url)
+      expect(url.pathname).toMatch(/^\/verify\/ts_/)
+      expect([url.searchParams.get('return_url'), url.searchParams.get('refresh_url')]).toEqual([
+        'https://example.com/seller/done',
+        'https://example.com/seller/again',
+      ])
+      expect([link.return_url, link.refresh_url]).toEqual([
+        'https://example.com/seller/done',
+        'https://example.com/seller/again',
+      ])
+      const hours = (new Date(link.expires_at).getTime() - Date.now()) / 3_600_000
+      expect(hours).toBeGreaterThan(23)
+      expect(hours).toBeLessThanOrEqual(24)
     },
   )
 

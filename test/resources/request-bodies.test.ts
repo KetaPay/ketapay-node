@@ -40,6 +40,22 @@ describe('request bodies', () => {
     expect(calls[0]!.headers).not.toHaveProperty('KetaPay-Customer-Token')
   })
 
+  it('[REQ-013] creates a verification link with the customer token, an idempotency key and the return URLs', async () => {
+    const { fetch, calls } = mockFetch({ status: 201, body: { object: 'verification_link' } })
+    await client(fetch).verificationLinks.create(
+      { return_url: 'https://example.com/done', refresh_url: 'https://example.com/again' },
+      { customerToken: 'tok' },
+    )
+    expect(calls[0]!.url).toContain('/verification_links')
+    expect(calls[0]!.method).toBe('POST')
+    expect(JSON.parse(String(calls[0]!.body))).toEqual({
+      return_url: 'https://example.com/done',
+      refresh_url: 'https://example.com/again',
+    })
+    expect(calls[0]!.headers).toMatchObject({ 'KetaPay-Customer-Token': 'tok' })
+    expect(calls[0]!.headers).toHaveProperty('Idempotency-Key')
+  })
+
   it('[REQ-012] escalates a dispute with the customer token and an idempotency key, and no body', async () => {
     const { fetch, calls } = mockFetch({ body: {} })
     await client(fetch).disputes.escalate('d1', { customerToken: 'tok' })

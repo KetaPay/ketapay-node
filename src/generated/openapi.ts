@@ -748,6 +748,36 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/verification_links': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Create a seller verification link
+     * @description A link for the customer whose token you send to verify their identity once (their BVN and a
+     *     selfie, on their phone), on a KetaPay page. Send them to `url`. Once they finish, every
+     *     payout held for them (`awaiting_verification`) goes on to their payout account, and the page
+     *     offers a button back to your `return_url`.
+     *
+     *     The link works for 24 hours (`expires_at`). Opened later, it sends the seller to your
+     *     `refresh_url` to get a new one, or back to `return_url` if you gave none. Opened on a
+     *     computer, the page shows a code to continue on their phone.
+     *
+     *     You only need this to bring the seller back to your app or site: a held payout's
+     *     `verification_url` works too, without a return button.
+     */
+    post: operations['createVerificationLink']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/webhook_endpoints': {
     parameters: {
       query?: never
@@ -891,6 +921,28 @@ export interface paths {
      * @description Funds the session as if the buyer paid, creates the escrow and sends `escrow.funded`.
      */
     post: operations['testPayCheckoutSession']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/test_helpers/customers/verify': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Verify a customer (sandbox)
+     * @description Verifies the customer whose token you send, as finishing hosted verification would. Every
+     *     payout held for them (`awaiting_verification`) is freed and goes on to their payout account,
+     *     with `payout.sent` or `payout.failed` as usual.
+     */
+    post: operations['testVerifyCustomer']
     delete?: never
     options?: never
     head?: never
@@ -1770,12 +1822,15 @@ export interface components {
       milestone_id: string
       amount: components['schemas']['Amount']
       /**
-       * @description `awaiting_account`: in the seller's KetaPay balance until they confirm a payout
-       *     account. `processing`: transfer started. `sent`: reached the bank. `failed`: rejected
-       *     by the bank and back in the seller's balance.
+       * @description `awaiting_verification`: held until the seller verifies their identity (platforms only:
+       *     a seller you name is paid once they have verified, any amount; a business selling for
+       *     itself is never held, nor is the seller of a platform KetaPay has approved to verify its
+       *     own sellers). `awaiting_account`: in the seller's KetaPay balance until they
+       *     confirm a payout account. `processing`: transfer started. `sent`: reached the bank.
+       *     `failed`: rejected by the bank and back in the seller's balance.
        * @enum {string}
        */
-      status: 'awaiting_account' | 'processing' | 'sent' | 'failed'
+      status: 'awaiting_verification' | 'awaiting_account' | 'processing' | 'sent' | 'failed'
       bank_name: string | null
       /** @example 6789 */
       account_number_last4: string | null
@@ -1783,6 +1838,15 @@ export interface components {
       sent_at: string | null
       /** @example Account closed */
       failure_reason: string | null
+      /**
+       * Format: uri
+       * @description Where the seller verifies, while the payout is `awaiting_verification`: send them there.
+       *     It is a KetaPay page, the same for every payout of the seller, and needs no sign-in: the
+       *     seller checks their BVN and takes a selfie on their phone. Once they finish, every payout
+       *     held for them goes on to their payout account. In test mode, starting it on the page
+       *     verifies the seller at once. Null in every other status.
+       */
+      verification_url: string | null
     }
     Milestone: {
       /** Format: uuid */
@@ -2415,6 +2479,48 @@ export interface components {
     RequestChangesRequest: {
       /** @description What the buyer needs changed, shown to the seller */
       note: string
+    }
+    CreateVerificationLinkRequest: {
+      /**
+       * Format: uri
+       * @description Where the page's button sends the seller once they're verified: your app or site. https
+       *     (http://localhost works with a test key).
+       */
+      return_url: string
+      /**
+       * Format: uri
+       * @description Where an expired link sends the seller, so you can make them a new one. https
+       *     (http://localhost works with a test key). Without it, an expired link points back to
+       *     `return_url`.
+       */
+      refresh_url?: string
+    }
+    VerificationLink: {
+      /** @constant */
+      object: 'verification_link'
+      livemode: boolean
+      /**
+       * Format: uri
+       * @description The page to send the seller to. In test mode, starting it verifies them at once.
+       * @example https://checkout.ketapay.com/verify/ls_9f1c...?return_url=https%3A%2F%2Fmarket.example.com%2Fseller%2Fpayouts
+       */
+      url: string
+      /** Format: uri */
+      return_url: string
+      /** Format: uri */
+      refresh_url: string | null
+      /**
+       * Format: date-time
+       * @description 24 hours after it was made
+       */
+      expires_at: string
+    }
+    /** @description The sandbox verified the customer (test helper) */
+    CustomerVerification: {
+      /** @constant */
+      object: 'customer_verification'
+      /** @constant */
+      verified: true
     }
   }
   responses: {
@@ -3723,6 +3829,44 @@ export interface operations {
       429: components['responses']['RateLimited']
     }
   }
+  createVerificationLink: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Unique key for this operation. Retries with the same key return the first result. */
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "return_url": "https://market.example.com/seller/payouts",
+         *       "refresh_url": "https://market.example.com/seller/verify"
+         *     }
+         */
+        'application/json': components['schemas']['CreateVerificationLinkRequest']
+      }
+    }
+    responses: {
+      /** @description The link to send the seller to */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['VerificationLink']
+        }
+      }
+      400: components['responses']['InvalidRequest']
+      401: components['responses']['Unauthenticated']
+      403: components['responses']['NotParty']
+      409: components['responses']['IdempotencyConflict']
+      429: components['responses']['RateLimited']
+    }
+  }
   listWebhookEndpoints: {
     parameters: {
       query?: {
@@ -4057,6 +4201,31 @@ export interface operations {
       401: components['responses']['Unauthenticated']
       404: components['responses']['NotFound']
       409: components['responses']['StateConflict']
+    }
+  }
+  testVerifyCustomer: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Unique key for this operation. Retries with the same key return the first result. */
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The customer is verified */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CustomerVerification']
+        }
+      }
+      401: components['responses']['Unauthenticated']
+      404: components['responses']['NotFound']
     }
   }
   onCheckoutSessionExpired: {
