@@ -73,6 +73,7 @@ const calls: Record<string, Call> = {
   getEvent: (k) => k.events.retrieve(ids.id),
   // Sandbox
   testPayCheckoutSession: (k) => k.testHelpers.checkoutSessions.pay(ids.id),
+  testVerifyCustomer: (k) => k.testHelpers.customers.verify({ customerToken: 't' }),
 }
 
 /** operationId -> method and path, read from the spec snapshot. */

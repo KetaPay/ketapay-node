@@ -897,6 +897,28 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/test_helpers/customers/verify': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Verify a customer (sandbox)
+     * @description Verifies the customer whose token you send, as finishing hosted verification would. Every
+     *     payout held for them (`awaiting_verification`) is freed and goes on to their payout account,
+     *     with `payout.sent` or `payout.failed` as usual.
+     */
+    post: operations['testVerifyCustomer']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
 }
 export interface webhooks {
   'checkout_session.expired': {
@@ -1770,12 +1792,14 @@ export interface components {
       milestone_id: string
       amount: components['schemas']['Amount']
       /**
-       * @description `awaiting_account`: in the seller's KetaPay balance until they confirm a payout
-       *     account. `processing`: transfer started. `sent`: reached the bank. `failed`: rejected
-       *     by the bank and back in the seller's balance.
+       * @description `awaiting_verification`: held until the seller verifies their identity (platforms only:
+       *     a seller you name is paid once they have verified, any amount; a business selling for
+       *     itself is never held). `awaiting_account`: in the seller's KetaPay balance until they
+       *     confirm a payout account. `processing`: transfer started. `sent`: reached the bank.
+       *     `failed`: rejected by the bank and back in the seller's balance.
        * @enum {string}
        */
-      status: 'awaiting_account' | 'processing' | 'sent' | 'failed'
+      status: 'awaiting_verification' | 'awaiting_account' | 'processing' | 'sent' | 'failed'
       bank_name: string | null
       /** @example 6789 */
       account_number_last4: string | null
@@ -1783,6 +1807,13 @@ export interface components {
       sent_at: string | null
       /** @example Account closed */
       failure_reason: string | null
+      /**
+       * Format: uri
+       * @description Where the seller verifies, while the payout is `awaiting_verification`: send them there.
+       *     Once they finish, every payout held for them goes on to their payout account. Null in
+       *     every other status, and until hosted verification is available.
+       */
+      verification_url: string | null
     }
     Milestone: {
       /** Format: uuid */
@@ -2415,6 +2446,13 @@ export interface components {
     RequestChangesRequest: {
       /** @description What the buyer needs changed, shown to the seller */
       note: string
+    }
+    /** @description The sandbox verified the customer (test helper) */
+    CustomerVerification: {
+      /** @constant */
+      object: 'customer_verification'
+      /** @constant */
+      verified: true
     }
   }
   responses: {
@@ -4057,6 +4095,31 @@ export interface operations {
       401: components['responses']['Unauthenticated']
       404: components['responses']['NotFound']
       409: components['responses']['StateConflict']
+    }
+  }
+  testVerifyCustomer: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Unique key for this operation. Retries with the same key return the first result. */
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description The customer is verified */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CustomerVerification']
+        }
+      }
+      401: components['responses']['Unauthenticated']
+      404: components['responses']['NotFound']
     }
   }
   onCheckoutSessionExpired: {
