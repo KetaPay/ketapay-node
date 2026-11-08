@@ -60,6 +60,8 @@ const calls: Record<string, Call> = {
   confirmPayoutAccount: (k) => k.payoutAccounts.confirm(ids.id, '123456', t),
   listPayoutAccounts: (k) => k.payoutAccounts.list(t),
   deletePayoutAccount: (k) => k.payoutAccounts.del(ids.id, t),
+  createVerificationLink: (k) =>
+    k.verificationLinks.create({ return_url: 'https://example.com/done', refresh_url: 'https://example.com/again' }, t),
   // Webhook endpoints and events
   createWebhookEndpoint: (k) =>
     k.webhookEndpoints.create({ url: 'https://example.com/hooks', enabled_events: ['escrow.funded'] }),
