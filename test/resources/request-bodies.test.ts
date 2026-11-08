@@ -50,6 +50,17 @@ describe('request bodies', () => {
     expect(calls[0]!.headers).toHaveProperty('Idempotency-Key')
   })
 
+  it('[REQ-013] resolves a dispute with the ruling in the body and an idempotency key, and no customer token', async () => {
+    const { fetch, calls } = mockFetch({ body: {} })
+    const ruling = { outcome: 'split' as const, refund_amount: 3_000_000, reason: 'Cracked screen, 30% back' }
+    await client(fetch).disputes.resolve('d1', ruling)
+    expect(calls[0]!.url).toContain('/disputes/d1/resolve')
+    expect(calls[0]!.method).toBe('POST')
+    expect(JSON.parse(String(calls[0]!.body))).toEqual(ruling)
+    expect(calls[0]!.headers).toHaveProperty('Idempotency-Key')
+    expect(calls[0]!.headers).not.toHaveProperty('KetaPay-Customer-Token')
+  })
+
   it('[REQ-008] creates a webhook endpoint from a URL alone, leaving the events to the API default', async () => {
     const { fetch, calls } = mockFetch({ body: {} })
     await client(fetch).webhookEndpoints.create({ url: 'https://example.com/hooks' })
