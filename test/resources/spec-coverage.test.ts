@@ -45,6 +45,7 @@ const calls: Record<string, Call> = {
   concedeDispute: (k) => k.disputes.concede(ids.id, t),
   escalateDispute: (k) => k.disputes.escalate(ids.id, t),
   withdrawDispute: (k) => k.disputes.withdraw(ids.id, t),
+  resolveDispute: (k) => k.disputes.resolve(ids.id, { outcome: 'release', reason: 'Delivered, tracking shows it' }),
   submitDisputeEvidence: (k) => k.disputes.submitEvidence(ids.id, { statement: 'Photos attached here' }, t),
   listDisputeEvidence: (k) => k.disputes.listEvidence(ids.id, t),
   listEscrowChargebacks: (k) => k.chargebacks.listForEscrow(ids.id),

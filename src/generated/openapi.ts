@@ -361,9 +361,10 @@ export interface paths {
      *
      *     Needs a key with the `escrows:manage` scope, which is never added to an existing key and
      *     has to be chosen when the key is made. Refused while the escrow has an open dispute
-     *     (`dispute_open`) or is under review (`escrow_under_review`). A sale between two of your
-     *     customers needs an approved platform (`platform_not_approved`) that KetaPay hasn't paused
-     *     (`rulings_paused`). Sends `escrow.refunded`.
+     *     (`dispute_open`) or is under review (`escrow_under_review`). A deal between two of your
+     *     customers is never refunded here (`dispute_required`): only they settle it, unless one of
+     *     them raises a dispute for your platform to decide (`POST /disputes/{id}/resolve`). Sends
+     *     `escrow.refunded`.
      */
     post: operations['refundEscrow']
     delete?: never
@@ -460,8 +461,8 @@ export interface paths {
      *     - **Seller's token:** refunds everything still held to the buyer. On a milestone dispute
      *       the remaining milestones are cancelled too, and the escrow ends `refunded`.
      *
-     *     Whoever opened the dispute can concede too. Only while it is `open`: once KetaPay is
-     *     deciding it is `escrow_under_review`, and once it has ended `dispute_not_open`. Sends
+     *     Whoever opened the dispute can concede too. Only while it is `open`: once it is
+     *     `under_review` it is `escrow_under_review`, and once it has ended `dispute_not_open`. Sends
      *     `dispute.resolved`, then the money events.
      */
     post: operations['concedeDispute']
@@ -481,10 +482,11 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * Ask KetaPay to decide
-     * @description Hands an `open` dispute to KetaPay, for the buyer or the seller whose customer token you
-     *     send (or your key alone when your business is the seller). The status becomes
-     *     `under_review` and both sides are told. No money moves, and neither side can concede or
+     * Ask for a decision
+     * @description Hands an `open` dispute to whoever decides it, for the buyer or the seller whose customer
+     *     token you send (or your key alone when your business is the seller): KetaPay, or on a deal
+     *     between two of your customers your platform (`POST /disputes/{id}/resolve`). The status
+     *     becomes `under_review` and both sides are told who decides. No money moves, and neither side can concede or
      *     withdraw after this (`escrow_under_review`). Evidence is still welcome until it ends.
      */
     post: operations['escalateDispute']
@@ -516,6 +518,46 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/disputes/{id}/resolve': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Decide a dispute (platforms)
+     * @description For an approved platform, on a deal between two of its customers, with your key alone: the
+     *     only way you move your customers' money, and only once one of them has raised a dispute.
+     *     While no dispute is open, only the buyer and seller act on the escrow.
+     *
+     *     - `release`: everything in dispute goes to the seller (less fees).
+     *     - `refund`: everything still held goes back to the buyer. On a milestone dispute the
+     *       remaining milestones are cancelled and the escrow ends `refunded`.
+     *     - `split`: `refund_amount` of what is in dispute goes back to the buyer and the rest to the
+     *       seller, in one go. It must leave both sides something (less than what is in dispute).
+     *
+     *     What is in dispute is the milestone for a milestone dispute, or everything still held for
+     *     the whole escrow. KetaPay keeps its fee as on a refund, and your commission is only on what
+     *     the seller is paid. Works while the dispute is `open` or `under_review`. The dispute ends
+     *     `resolved` with `outcome` `released`, `refunded` or `partially_refunded` and `resolved_by`
+     *     `platform`. Sends `dispute.resolved`, then the money events.
+     *
+     *     Refused for a merchant (`platform_not_approved`: KetaPay decides your disputes), on your
+     *     own sales or deals your team is part of (`not_the_decider`), while KetaPay has paused your
+     *     platform (`rulings_paused`: KetaPay decides meanwhile), once the dispute has ended
+     *     (`dispute_not_open`) and while the escrow is under review (`escrow_under_review`). Counts
+     *     towards your rolling 24-hour limit (`daily_limit_reached`).
+     */
+    post: operations['resolveDispute']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/disputes/{id}/evidence': {
     parameters: {
       query?: never
@@ -527,7 +569,8 @@ export interface paths {
      * List evidence
      * @description Everything both sides have submitted, oldest first, including files they added in the
      *     KetaPay app (each on its own, with a null `statement`). Needs the buyer's or the seller's
-     *     customer token.
+     *     customer token, or, on a deal between two of your customers that your platform decides,
+     *     your key alone.
      */
     get: operations['listDisputeEvidence']
     put?: never
@@ -1390,7 +1433,7 @@ export interface components {
          *     `customer_not_allowed`, `bank_account_not_found`, `file_too_large`,
          *     `file_type_not_allowed`, `file_not_usable`, `resource_not_found`,
          *     `url_not_https`, `api_key_invalid`, `api_key_expired`, `missing_scope`, `live_mode_not_enabled`,
-         *     `platform_not_approved`, `rulings_paused`, `daily_limit_reached`,
+         *     `platform_not_approved`, `not_the_decider`, `dispute_required`, `rulings_paused`, `daily_limit_reached`,
          *     `action_already_scheduled`,
          *     `idempotency_key_missing`, `idempotency_key_reused`, `rate_limited`, `test_mode_only`,
          *     `internal_error`. New codes may be added.
@@ -1951,8 +1994,12 @@ export interface components {
       /** @constant */
       object: 'money_action'
       livemode: boolean
-      /** @enum {string} */
-      action: 'release' | 'refund' | 'ruling_release' | 'ruling_refund'
+      /**
+       * @description `refund` is a refund of your own sale. `ruling_*` is a platform's decision on a dispute
+       *     (`dispute_id`): all to the seller, all back to the buyer, or split.
+       * @enum {string}
+       */
+      action: 'release' | 'refund' | 'ruling_release' | 'ruling_refund' | 'ruling_split'
       /**
        * @description `scheduled` is waiting for `execute_after`, `executing` is moving the money. `executed`
        *     is done. `cancelled` was overtaken or stopped before any money moved. `failed` didn't
@@ -1961,6 +2008,8 @@ export interface components {
        */
       status: 'scheduled' | 'executing' | 'executed' | 'cancelled' | 'failed'
       amount: components['schemas']['Amount']
+      /** @description For `ruling_split`, the part of `amount` that went back to the buyer; the rest went to the seller. Null otherwise */
+      refund_amount: components['schemas']['Amount'] | null
       /** Format: uuid */
       escrow_id: string
       /** Format: uuid */
@@ -2016,23 +2065,24 @@ export interface components {
       /** @enum {string} */
       opened_by: 'buyer' | 'seller'
       /**
-       * @description `open`: the buyer and seller are trying to agree. `under_review`: a KetaPay mediator
-       *     is deciding. `resolved`: ended, see `outcome`.
+       * @description `open`: the buyer and seller are trying to agree. `under_review`: whoever decides it
+       *     (KetaPay, or the platform on a deal between its customers) is deciding. `resolved`:
+       *     ended, see `outcome`.
        * @enum {string}
        */
       status: 'open' | 'under_review' | 'resolved'
       reason: components['schemas']['DisputeReason']
       /**
        * @description Null until resolved. `withdrawn`: the buyer withdrew the dispute and the deal
-       *     continues. `partially_refunded`: split between buyer and seller.
+       *     continues. `partially_refunded`: a platform split it between buyer and seller.
        * @enum {string|null}
        */
       outcome: 'released' | 'refunded' | 'partially_refunded' | 'withdrawn' | null
       /**
-       * @description Who ended it. A party can only end it against themselves (conceding) or by withdrawing their own dispute.
+       * @description Who ended it. A party can only end it against themselves (conceding) or by withdrawing their own dispute. `platform` when the platform that decides the deal ruled.
        * @enum {string|null}
        */
-      resolved_by: 'buyer' | 'seller' | 'ketapay' | null
+      resolved_by: 'buyer' | 'seller' | 'ketapay' | 'platform' | null
       /** @description For `refunded` and `partially_refunded`, the amount returned to the buyer */
       refunded_amount?: components['schemas']['Amount'] | null
       /**
@@ -2416,6 +2466,20 @@ export interface components {
       /** @description What the buyer needs changed, shown to the seller */
       note: string
     }
+    ResolveDisputeRequest: {
+      /**
+       * @description All to the seller, all back to the buyer, or split with `refund_amount`
+       * @enum {string}
+       */
+      outcome: 'release' | 'refund' | 'split'
+      /**
+       * @description For `split` only, and required for it: what goes back to the buyer, in kobo. Less than
+       *     what is in dispute, so the seller gets the rest.
+       */
+      refund_amount?: number
+      /** @description Why you decided this way, under your policy. Kept with the record of who did it. */
+      reason: string
+    }
   }
   responses: {
     /** @description The updated escrow */
@@ -2494,7 +2558,7 @@ export interface components {
         'application/json': components['schemas']['Error']
       }
     }
-    /** @description The key lacks the scope, or the organisation can't do this yet (for example live keys before verification, `platform_not_approved`, `rulings_paused`, `daily_limit_reached`) */
+    /** @description The key lacks the scope, or the organisation can't do this (for example live keys before verification, `platform_not_approved`, `not_the_decider`, `dispute_required`, `rulings_paused`, `daily_limit_reached`) */
     Forbidden: {
       headers: {
         [name: string]: unknown
@@ -3350,6 +3414,48 @@ export interface operations {
       }
       401: components['responses']['Unauthenticated']
       403: components['responses']['NotParty']
+      404: components['responses']['NotFound']
+      409: components['responses']['StateConflict']
+      429: components['responses']['RateLimited']
+    }
+  }
+  resolveDispute: {
+    parameters: {
+      query?: never
+      header: {
+        /** @description Unique key for this operation. Retries with the same key return the first result. */
+        'Idempotency-Key': components['parameters']['IdempotencyKey']
+      }
+      path: {
+        id: components['parameters']['Id']
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        /**
+         * @example {
+         *       "outcome": "split",
+         *       "refund_amount": 3000000,
+         *       "reason": "The screen arrived cracked; our policy refunds 30% for cosmetic damage."
+         *     }
+         */
+        'application/json': components['schemas']['ResolveDisputeRequest']
+      }
+    }
+    responses: {
+      /** @description Decided. The money action is `executed`. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MoneyAction']
+        }
+      }
+      400: components['responses']['InvalidRequest']
+      401: components['responses']['Unauthenticated']
+      403: components['responses']['Forbidden']
       404: components['responses']['NotFound']
       409: components['responses']['StateConflict']
       429: components['responses']['RateLimited']
