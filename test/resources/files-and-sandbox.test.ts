@@ -35,5 +35,18 @@ describe('test helpers', () => {
       code: 'test_mode_only',
     })
     expect(calls).toHaveLength(0)
+    await expect(live.testHelpers.customers.verify({ customerToken: 't' })).rejects.toMatchObject({
+      code: 'test_mode_only',
+    })
+    expect(calls).toHaveLength(0)
+  })
+
+  it('verify sends the customer token to the verify helper', async () => {
+    const { fetch, calls } = mockFetch({ body: { object: 'customer_verification', verified: true } })
+    const result = await client(fetch).testHelpers.customers.verify({ customerToken: 'ct_1' })
+    expect(result).toEqual({ object: 'customer_verification', verified: true })
+    expect(calls[0]!.method).toBe('POST')
+    expect(calls[0]!.url).toMatch(/\/v1\/test_helpers\/customers\/verify$/)
+    expect(calls[0]!.headers['KetaPay-Customer-Token']).toBe('ct_1')
   })
 })
