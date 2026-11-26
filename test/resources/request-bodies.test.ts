@@ -40,7 +40,7 @@ describe('request bodies', () => {
     expect(calls[0]!.headers).not.toHaveProperty('KetaPay-Customer-Token')
   })
 
-  it('[REQ-013] creates a verification link with the customer token, an idempotency key and the return URLs', async () => {
+  it('[REQ-014] creates a verification link with the customer token, an idempotency key and the return URLs', async () => {
     const { fetch, calls } = mockFetch({ status: 201, body: { object: 'verification_link' } })
     await client(fetch).verificationLinks.create(
       { return_url: 'https://example.com/done', refresh_url: 'https://example.com/again' },

@@ -48,7 +48,7 @@ describe.skipIf(!configured)('e2e: payouts', () => {
   )
 
   it.skipIf(!served('payout_accounts', 'milestone_payout'))(
-    "[E2E-043] an unverified seller's payout waits for verification, then goes out with payout.sent",
+    "[E2E-045] an unverified seller's payout waits for verification, then goes out with payout.sent",
     async () => {
       const { escrow, buyer, seller } = await fundedEscrow()
       const k = ketapay()
@@ -75,7 +75,7 @@ describe.skipIf(!configured)('e2e: payouts', () => {
   )
 
   it.skipIf(!served('payout_accounts', 'milestone_payout'))(
-    "[E2E-044] a held payout's verification_url is the seller's /verify/ page, gone once they are verified",
+    "[E2E-046] a held payout's verification_url is the seller's /verify/ page, gone once they are verified",
     async () => {
       const { escrow, buyer, seller } = await fundedEscrow()
       const k = ketapay()
@@ -102,7 +102,7 @@ describe.skipIf(!configured)('e2e: payouts', () => {
   )
 
   it.skipIf(!served('payout_accounts'))(
-    '[E2E-045] a verification link for a seller is their /verify/ page with the return URLs, for about a day',
+    '[E2E-047] a verification link for a seller is their /verify/ page with the return URLs, for about a day',
     async () => {
       const k = ketapay()
       const customerToken = await tokenFor(people().seller.email)
