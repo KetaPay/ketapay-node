@@ -9,6 +9,7 @@ export type ApiFeature =
   | 'files' // POST /files
   | 'payout_accounts' // /banks, /payout_accounts/*
   | 'milestone_payout' // milestone.payout and milestone.refund
+  | 'rulings' // POST /disputes/{id}/resolve (a platform's ruling)
 
 const NOT_SERVED_YET: ApiFeature[] = []
 

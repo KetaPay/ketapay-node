@@ -2,7 +2,8 @@ import type { APIPromise } from '../../core/api-promise.js'
 import type { CustomerRequestOptions, RequestOptions } from '../../core/options.js'
 import { Resource, seg } from '../../core/resource.js'
 import type { List } from '../common/types.js'
-import type { Dispute, DisputeCreateParams, Evidence, EvidenceSubmitParams } from './types.js'
+import type { MoneyAction } from '../money-actions/types.js'
+import type { Dispute, DisputeCreateParams, DisputeResolveParams, Evidence, EvidenceSubmitParams } from './types.js'
 
 export class Disputes extends Resource {
   /** Opens a dispute for the buyer or the seller whose customer token you send. */
@@ -24,9 +25,18 @@ export class Disputes extends Resource {
     return this.http.request('POST', `/disputes/${seg(id)}/concede`, { options })
   }
 
-  /** Hands an open dispute to KetaPay to decide, for the customer whose token you send. No money moves. */
+  /** Hands an open dispute to whoever decides it (KetaPay, or your platform), for the customer whose token you send. No money moves. */
   escalate(id: string, options: CustomerRequestOptions): APIPromise<Dispute> {
     return this.http.request('POST', `/disputes/${seg(id)}/escalate`, { options })
+  }
+
+  /**
+   * A platform's ruling on a dispute between two of its customers, with your key alone: release
+   * it to the seller, refund the buyer, or split it (`refund_amount` in kobo back to the buyer,
+   * the rest to the seller). Needs `escrows:manage`.
+   */
+  resolve(id: string, params: DisputeResolveParams, options?: RequestOptions): APIPromise<MoneyAction> {
+    return this.http.request('POST', `/disputes/${seg(id)}/resolve`, { body: params, options })
   }
 
   /** Withdraws a dispute. Only whoever opened it. */
@@ -38,7 +48,8 @@ export class Disputes extends Resource {
     return this.http.request('POST', `/disputes/${seg(id)}/evidence`, { body: params, options })
   }
 
-  listEvidence(id: string, options: CustomerRequestOptions): APIPromise<List<Evidence>> {
+  /** Both sides' evidence: with a party's customer token, or your key alone on a dispute your platform decides. */
+  listEvidence(id: string, options?: CustomerRequestOptions | RequestOptions): APIPromise<List<Evidence>> {
     return this.http.request('GET', `/disputes/${seg(id)}/evidence`, { options })
   }
 }

@@ -3,6 +3,7 @@ import type { Schemas } from '../common/types.js'
 export type Dispute = Schemas['Dispute']
 export type DisputeReason = Schemas['DisputeReason']
 export type DisputeCreateParams = Schemas['CreateDisputeRequest']
+export type DisputeResolveParams = Schemas['ResolveDisputeRequest']
 export type Evidence = Schemas['Evidence']
 export type EvidenceSubmitParams = Schemas['SubmitEvidenceRequest']
 export type Refund = Schemas['Refund']
