@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.0-beta.7](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.6...v0.1.0-beta.7) (2026-11-26)
+
+
+### Features
+
+* **disputes:** add disputes.resolve for platform rulings (ENG-577) ([#54](https://github.com/KetaPay/ketapay-node/issues/54)) ([3c23425](https://github.com/KetaPay/ketapay-node/commit/3c2342597ff58f56176b08584ce25eb9c2b4808e))
+* **verification-links:** create a seller verification link with return URLs ([#53](https://github.com/KetaPay/ketapay-node/issues/53)) ([b4b66ab](https://github.com/KetaPay/ketapay-node/commit/b4b66ab65f8c77165c13ac59143e25cd1bc0e4d9))
+
 ## [0.1.0-beta.6](https://github.com/KetaPay/ketapay-node/compare/v0.1.0-beta.5...v0.1.0-beta.6) (2026-11-06)
 
 
